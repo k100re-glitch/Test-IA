@@ -1,0 +1,72 @@
+{
+  "font.family": {
+    "$type": "fontFamily",
+    "$value": "Inter"
+  },
+  "text.caption.regular": {
+    "size": 14,
+    "weight": 400,
+    "lineHeight": 100,
+    "letterSpacing": -1
+  },
+  "text.caption.emphasized": {
+    "size": 14,
+    "weight": 500,
+    "lineHeight": 100,
+    "letterSpacing": -1
+  },
+  "text.body.regular": {
+    "size": 16,
+    "weight": 400,
+    "lineHeight": 100,
+    "letterSpacing": -1
+  },
+  "text.body.emphasized": {
+    "size": 16,
+    "weight": 500,
+    "lineHeight": 100,
+    "letterSpacing": -1
+  },
+  "text.headline.regular": {
+    "size": 18,
+    "weight": 400,
+    "lineHeight": 100,
+    "letterSpacing": -1
+  },
+  "text.headline.emphasized": {
+    "size": 18,
+    "weight": 500,
+    "lineHeight": 100,
+    "letterSpacing": -1
+  },
+  "text.title2.emphasized": {
+    "size": 20,
+    "weight": 600,
+    "lineHeight": 100,
+    "letterSpacing": -1
+  },
+  "text.title.regular": {
+    "size": 24,
+    "weight": 500,
+    "lineHeight": 1.2,
+    "letterSpacing": -2
+  },
+  "text.title.emphasized": {
+    "size": 24,
+    "weight": 600,
+    "lineHeight": 1.2,
+    "letterSpacing": -2
+  },
+  "text.largeTitle.regular": {
+    "size": 32,
+    "weight": 500,
+    "lineHeight": 1.2,
+    "letterSpacing": -2
+  },
+  "text.largeTitle.emphasized": {
+    "size": 32,
+    "weight": 600,
+    "lineHeight": 1.2,
+    "letterSpacing": -2
+  }
+}

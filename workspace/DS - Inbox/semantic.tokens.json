@@ -1,0 +1,463 @@
+{
+  "_source": "Figma Inbox Zapper, page semantic-colors (node 10606:62979), lu le 2026-10-27",
+  "_modes": [
+    "light",
+    "dark"
+  ],
+  "tokens": {
+    "background/elevated": {
+      "$type": "color",
+      "light": {
+        "hex": "#FFFFFF"
+      },
+      "dark": {
+        "hex": "#1C1F22"
+      }
+    },
+    "background/primary": {
+      "$type": "color",
+      "light": {
+        "hex": "#FFFFFF"
+      },
+      "dark": {
+        "hex": "#141617"
+      }
+    },
+    "background/secondary": {
+      "$type": "color",
+      "light": {
+        "hex": "#F0F0F1"
+      },
+      "dark": {
+        "hex": "#181B1D"
+      }
+    },
+    "background/tertiary": {
+      "$type": "color",
+      "light": {
+        "hex": "#D5D7D9"
+      },
+      "dark": {
+        "hex": "#1C1F22"
+      }
+    },
+    "surface/brand": {
+      "$type": "color",
+      "light": {
+        "hex": "#E1EFFE"
+      },
+      "dark": {
+        "hex": "#001F3F"
+      }
+    },
+    "surface/brand-subtle": {
+      "$type": "color",
+      "light": {
+        "hex": "#F0F7FF"
+      },
+      "dark": {
+        "hex": "#003366"
+      }
+    },
+    "surface/primary": {
+      "$type": "color",
+      "light": {
+        "hex": "#FFFFFF"
+      },
+      "dark": {
+        "hex": "#181B1D"
+      }
+    },
+    "surface/secondary": {
+      "$type": "color",
+      "light": {
+        "hex": "#F7F7F8"
+      },
+      "dark": {
+        "hex": "#1C1F22"
+      }
+    },
+    "surface/tertiary": {
+      "$type": "color",
+      "light": {
+        "hex": "#F0F0F1"
+      },
+      "dark": {
+        "hex": "#1C1F22"
+      }
+    },
+    "text/body": {
+      "$type": "color",
+      "light": {
+        "hex": "#4D5258"
+      },
+      "dark": {
+        "hex": "#D5D7D9"
+      }
+    },
+    "text/brand": {
+      "$type": "color",
+      "light": {
+        "hex": "#007BFF"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    },
+    "text/inverse": {
+      "$type": "color",
+      "light": {
+        "hex": "#FFFFFF"
+      },
+      "dark": {
+        "hex": "#141617"
+      }
+    },
+    "text/link": {
+      "$type": "color",
+      "light": {
+        "hex": "#007BFF"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    },
+    "text/placeholder": {
+      "$type": "color",
+      "light": {
+        "hex": "#9B9FA4"
+      },
+      "dark": {
+        "hex": "#9B9FA4"
+      }
+    },
+    "text/primary": {
+      "$type": "color",
+      "light": {
+        "hex": "#141617"
+      },
+      "dark": {
+        "hex": "#FFFFFF"
+      }
+    },
+    "text/secondary": {
+      "$type": "color",
+      "light": {
+        "hex": "#4D5258"
+      },
+      "dark": {
+        "hex": "#D5D7D9"
+      }
+    },
+    "text/tertiary": {
+      "$type": "color",
+      "light": {
+        "hex": "#6B7076"
+      },
+      "dark": {
+        "hex": "#9B9FA4"
+      }
+    },
+    "stroke/default": {
+      "$type": "color",
+      "light": {
+        "hex": "#D5D7D9"
+      },
+      "dark": {
+        "hex": "#292D31"
+      }
+    },
+    "stroke/strong": {
+      "$type": "color",
+      "light": {
+        "hex": "#141617"
+      },
+      "dark": {
+        "hex": "#D5D7D9"
+      }
+    },
+    "stroke/subtle": {
+      "$type": "color",
+      "light": {
+        "hex": "#F0F0F1"
+      },
+      "dark": {
+        "hex": "#1C1F22"
+      }
+    },
+    "icon/brand": {
+      "$type": "color",
+      "light": {
+        "hex": "#007BFF"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    },
+    "icon/primary": {
+      "$type": "color",
+      "light": {
+        "hex": "#141617"
+      },
+      "dark": {
+        "hex": "#FFFFFF"
+      }
+    },
+    "icon/secondary": {
+      "$type": "color",
+      "light": {
+        "hex": "#6B7076"
+      },
+      "dark": {
+        "hex": "#D5D7D9"
+      }
+    },
+    "icon/tertiary": {
+      "$type": "color",
+      "light": {
+        "hex": "#9B9FA4"
+      },
+      "dark": {
+        "hex": "#9B9FA4"
+      }
+    },
+    "action/destructive": {
+      "$type": "color",
+      "light": {
+        "hex": "#CD3636"
+      },
+      "dark": {
+        "hex": "#CD3636"
+      }
+    },
+    "action/destructive-surface": {
+      "$type": "color",
+      "light": {
+        "hex": "#CD3636",
+        "alpha": 0.15
+      },
+      "dark": {
+        "hex": "#CD3636",
+        "alpha": 0.15
+      }
+    },
+    "action/destructive-text": {
+      "$type": "color",
+      "light": {
+        "hex": "#CD3636"
+      },
+      "dark": {
+        "hex": "#CD3636"
+      }
+    },
+    "action/keep": {
+      "$type": "color",
+      "light": {
+        "hex": "#1B49BD"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    },
+    "action/keep-surface": {
+      "$type": "color",
+      "light": {
+        "hex": "#EDF1F9"
+      },
+      "dark": {
+        "hex": "#007BFF",
+        "alpha": 0.15
+      }
+    },
+    "action/keep-text": {
+      "$type": "color",
+      "light": {
+        "hex": "#1B49BD"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    },
+    "action/primary": {
+      "$type": "color",
+      "light": {
+        "hex": "#007BFF"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    },
+    "action/primary-hover": {
+      "$type": "color",
+      "light": {
+        "hex": "#0062CC"
+      },
+      "dark": {
+        "hex": "#3395FF"
+      }
+    },
+    "action/primary-text": {
+      "$type": "color",
+      "light": {
+        "hex": "#FFFFFF"
+      },
+      "dark": {
+        "hex": "#FFFFFF"
+      }
+    },
+    "status/error": {
+      "$type": "color",
+      "light": {
+        "hex": "#CD3636"
+      },
+      "dark": {
+        "hex": "#D94444"
+      }
+    },
+    "status/error-surface": {
+      "$type": "color",
+      "light": {
+        "hex": "#FDE9E9"
+      },
+      "dark": {
+        "hex": "#2B0707"
+      }
+    },
+    "status/info": {
+      "$type": "color",
+      "light": {
+        "hex": "#1B49BD"
+      },
+      "dark": {
+        "hex": "#7A9DD4"
+      }
+    },
+    "status/info-surface": {
+      "$type": "color",
+      "light": {
+        "hex": "#EDF0FA"
+      },
+      "dark": {
+        "hex": "#081F47"
+      }
+    },
+    "status/success": {
+      "$type": "color",
+      "light": {
+        "hex": "#44BD1B"
+      },
+      "dark": {
+        "hex": "#51C223"
+      }
+    },
+    "status/success-surface": {
+      "$type": "color",
+      "light": {
+        "hex": "#EEFAED"
+      },
+      "dark": {
+        "hex": "#51C223",
+        "alpha": 0.1
+      }
+    },
+    "status/warning": {
+      "$type": "color",
+      "light": {
+        "hex": "#E78300"
+      },
+      "dark": {
+        "hex": "#F29A00"
+      }
+    },
+    "status/warning-surface": {
+      "$type": "color",
+      "light": {
+        "hex": "#FFF7ED"
+      },
+      "dark": {
+        "hex": "#211300"
+      }
+    },
+    "component/badge": {
+      "$type": "color",
+      "light": {
+        "hex": "#CD3636"
+      },
+      "dark": {
+        "hex": "#D94444"
+      }
+    },
+    "component/progress": {
+      "$type": "color",
+      "light": {
+        "hex": "#007BFF"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    },
+    "component/progress-track": {
+      "$type": "color",
+      "light": {
+        "hex": "#F0F0F1"
+      },
+      "dark": {
+        "hex": "#1C1F22"
+      }
+    },
+    "component/tab-active": {
+      "$type": "color",
+      "light": {
+        "hex": "#007BFF"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    },
+    "component/tab-inactive": {
+      "$type": "color",
+      "light": {
+        "hex": "#9B9FA4"
+      },
+      "dark": {
+        "hex": "#6B7076"
+      }
+    },
+    "component/tag-surface": {
+      "$type": "color",
+      "light": {
+        "hex": "#F0F0F1"
+      },
+      "dark": {
+        "hex": "#1C1F22"
+      }
+    },
+    "component/tag-text": {
+      "$type": "color",
+      "light": {
+        "hex": "#6B7076"
+      },
+      "dark": {
+        "hex": "#D5D7D9"
+      }
+    },
+    "component/toggle-off": {
+      "$type": "color",
+      "light": {
+        "hex": "#D5D7D9"
+      },
+      "dark": {
+        "hex": "#353B41"
+      }
+    },
+    "component/toggle-on": {
+      "$type": "color",
+      "light": {
+        "hex": "#007BFF"
+      },
+      "dark": {
+        "hex": "#007BFF"
+      }
+    }
+  }
+}

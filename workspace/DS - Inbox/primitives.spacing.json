@@ -1,0 +1,30 @@
+{
+  "space.xSmall": {
+    "$type": "dimension",
+    "$value": 4
+  },
+  "space.small": {
+    "$type": "dimension",
+    "$value": 8
+  },
+  "space.normal": {
+    "$type": "dimension",
+    "$value": 12
+  },
+  "space.medium": {
+    "$type": "dimension",
+    "$value": 16
+  },
+  "space.xLarge": {
+    "$type": "dimension",
+    "$value": 24
+  },
+  "space.x2Large": {
+    "$type": "dimension",
+    "$value": 32
+  },
+  "space.x3Large": {
+    "$type": "dimension",
+    "$value": 40
+  }
+}

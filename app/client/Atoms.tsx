@@ -1,0 +1,275 @@
+import type { ReactNode } from 'react';
+import bellMark from './stickers/bell.png';
+
+// Atomes portés depuis la page components_list d'Inbox Zapper.
+// Les valeurs viennent des tokens : aucune couleur ni dimension en dur ici.
+//
+// Deux tailles, nommées comme dans Figma :
+//   H1 — texte font.control, icône 24 px, rembourrage généreux
+//   H2 — texte font.body, icône 20 px
+//
+// Le bouton « secondaire désactivé » de Figma affiche du texte blanc sur
+// action/keep-surface, soit un contraste d'environ 1,1:1. Ce n'est pas
+// reproduit tel quel : l'état désactivé utilise ici color.placeholder, qui
+// reste lisible. L'écart est consigné dans workspace/DECISIONS.md.
+
+export type ButtonTone = 'primary' | 'secondary' | 'danger' | 'dangerSoft' | 'grey';
+// h1 et h2 sont les deux tailles du composant `button`. `sm` correspond au
+// groupe `buttons--secondary` de Figma (hauteur 35), utilisé dans les cartes.
+export type ButtonSize = 'h1' | 'h2' | 'sm';
+
+// Dans Figma chaque bouton porte une icône (academic-cap) et occupe toute la
+// largeur. L'icône est redessinée ici plutôt qu'importée : les URL d'export
+// Figma expirent, et une icône en SVG local suit la couleur du token.
+function DefaultIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 3 1 8.5l11 5.5 9-4.5v6h2v-7L12 3Zm-7 9.1v3.4c0 1.9 3.1 3.5 7 3.5s7-1.6 7-3.5v-3.4l-7 3.5-7-3.5Z" />
+    </svg>
+  );
+}
+
+export function Button({
+  tone = 'primary',
+  size = 'h1',
+  disabled = false,
+  icon,
+  showIcon = true,
+  block = false,
+  children,
+  onClick,
+  type = 'button',
+}: {
+  tone?: ButtonTone;
+  size?: ButtonSize;
+  disabled?: boolean;
+  icon?: ReactNode;
+  showIcon?: boolean;
+  block?: boolean;
+  children: ReactNode;
+  onClick?: () => void;
+  type?: 'button' | 'submit';
+}) {
+  const mark = icon ?? (showIcon ? <DefaultIcon /> : null);
+  return (
+    <button
+      type={type}
+      className={`ds-btn ds-btn-${tone} ds-btn-${size}${block ? ' ds-btn-block' : ''}`}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {mark && (
+        <span className="ds-btn-icon" aria-hidden="true">
+          {mark}
+        </span>
+      )}
+      {children}
+    </button>
+  );
+}
+
+export function Tag({
+  tone = 'primary',
+  children,
+}: {
+  tone?: 'primary' | 'secondary';
+  children: ReactNode;
+}) {
+  return <span className={`ds-tag ds-tag-${tone}`}>{children}</span>;
+}
+
+// Les trois contrôles suivants restent des éléments de formulaire natifs :
+// le focus clavier, le rôle et l'annonce au lecteur d'écran viennent du
+// navigateur. Seule l'apparence est reprise du DS.
+
+export function Checkbox({
+  checked,
+  onChange,
+  children,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="ds-choice">
+      <input
+        type="checkbox"
+        className="ds-checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span>{children}</span>
+    </label>
+  );
+}
+
+export function Radio({
+  name,
+  value,
+  checked,
+  onChange,
+  children,
+}: {
+  name: string;
+  value: string;
+  checked: boolean;
+  onChange: (value: string) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="ds-choice">
+      <input
+        type="radio"
+        className="ds-radio"
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={() => onChange(value)}
+      />
+      <span>{children}</span>
+    </label>
+  );
+}
+
+export function Toggle({
+  checked,
+  onChange,
+  children,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="ds-choice ds-toggle-row">
+      <input
+        type="checkbox"
+        role="switch"
+        className="ds-toggle"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span>{children}</span>
+    </label>
+  );
+}
+
+export function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  multiline = false,
+  disabled = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (next: string) => void;
+  placeholder?: string;
+  multiline?: boolean;
+  disabled?: boolean;
+}) {
+  const shared = {
+    className: 'ds-input',
+    value,
+    placeholder,
+    disabled,
+    onChange: (e: { target: { value: string } }) => onChange(e.target.value),
+  };
+  return (
+    <label className="ds-field">
+      <span className="ds-field-label">{label}</span>
+      {multiline ? <textarea rows={4} {...shared} /> : <input {...shared} />}
+    </label>
+  );
+}
+
+// modal — porté depuis Figma (node 6819:117044), quatre états.
+// Largeur 345, rembourrage et rayon à 24, titre 24/600 interligne 1,2,
+// description 16/400. Le rayon vaut le pas d'espacement xlarge : Figma
+// utilise la même variable, on fait de même plutôt que d'inventer un token.
+export type ModalState = 'two' | 'one' | 'none' | 'stacked';
+
+// L'illustration est un emplacement : les écrans y passent la leur. Par
+// défaut c'est la cloche, comme le slot du composant dans Figma.
+function ModalMark() {
+  return <img src={bellMark} alt="" aria-hidden="true" draggable={false} />;
+}
+
+export function Modal({
+  state = 'two',
+  title = 'Here your title',
+  children = 'The description of your pop-up should be written here, like this, here you go.',
+  mark,
+  showMark = true,
+  primaryLabel = 'Text',
+  secondaryLabel = 'Text',
+  onPrimary,
+  onSecondary,
+  onClose,
+}: {
+  state?: ModalState;
+  title?: string;
+  children?: ReactNode;
+  mark?: ReactNode;
+  showMark?: boolean;
+  primaryLabel?: string;
+  secondaryLabel?: string;
+  onPrimary?: () => void;
+  onSecondary?: () => void;
+  onClose?: () => void;
+}) {
+  const primary = (
+    <Button size="h2" showIcon={false} block onClick={onPrimary}>
+      {primaryLabel}
+    </Button>
+  );
+  const secondary = (
+    <Button
+      size="h2"
+      tone="grey"
+      showIcon={false}
+      block
+      onClick={onSecondary}
+    >
+      {secondaryLabel}
+    </Button>
+  );
+  return (
+    <div className="ds-modal">
+      <div className="ds-modal-body">
+        {showMark && (
+          <span className="ds-modal-mark" aria-hidden="true">
+            {mark ?? <ModalMark />}
+          </span>
+        )}
+        <div className="ds-modal-text">
+          <p className="ds-modal-title">{title}</p>
+          <p className="ds-modal-desc">{children}</p>
+        </div>
+        {state === 'none' && (
+          <button type="button" className="ds-modal-close" onClick={onClose}>
+            <span className="ds-visually-hidden">Fermer</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        )}
+      </div>
+      {state === 'two' && (
+        <div className="ds-modal-actions">
+          {secondary}
+          {primary}
+        </div>
+      )}
+      {state === 'one' && <div className="ds-modal-actions">{primary}</div>}
+      {state === 'stacked' && (
+        <div className="ds-modal-actions is-stacked">
+          {primary}
+          {secondary}
+        </div>
+      )}
+    </div>
+  );
+}

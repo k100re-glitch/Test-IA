@@ -1,0 +1,134 @@
+{
+  "color.brand": {
+    "$type": "color",
+    "$value": "#007BFF"
+  },
+  "color.brandHover": {
+    "$type": "color",
+    "$value": "#0062CC"
+  },
+  "color.onBrand": {
+    "$type": "color",
+    "$value": "#FFFFFF"
+  },
+  "color.surface": {
+    "$type": "color",
+    "$value": "#FFFFFF"
+  },
+  "color.canvas": {
+    "$type": "color",
+    "$value": "#F0F0F1"
+  },
+  "color.text": {
+    "$type": "color",
+    "$value": "#141617"
+  },
+  "color.muted": {
+    "$type": "color",
+    "$value": "#6B7076"
+  },
+  "color.border": {
+    "$type": "color",
+    "$value": "#D5D7D9"
+  },
+  "color.danger": {
+    "$type": "color",
+    "$value": "#CD3636"
+  },
+  "color.success": {
+    "$type": "color",
+    "$value": "#44BD1B"
+  },
+  "color.focus": {
+    "$type": "color",
+    "$value": "#007BFF"
+  },
+  "font.family": {
+    "$type": "fontFamily",
+    "$value": "Inter"
+  },
+  "font.body": {
+    "$type": "dimension",
+    "$value": 16
+  },
+  "font.heading": {
+    "$type": "dimension",
+    "$value": 24
+  },
+  "space.sm": {
+    "$type": "dimension",
+    "$value": 8
+  },
+  "space.md": {
+    "$type": "dimension",
+    "$value": 16
+  },
+  "space.lg": {
+    "$type": "dimension",
+    "$value": 24
+  },
+  "radius.control": {
+    "$type": "dimension",
+    "$value": 12
+  },
+  "color.brandSurface": {
+    "$type": "color",
+    "$value": "#EDF1F9"
+  },
+  "color.surfaceMuted": {
+    "$type": "color",
+    "$value": "#F7F7F8"
+  },
+  "color.surfaceSunken": {
+    "$type": "color",
+    "$value": "#F0F0F1"
+  },
+  "color.dangerSurface": {
+    "$type": "color",
+    "$value": "#F8E1E1"
+  },
+  "color.placeholder": {
+    "$type": "color",
+    "$value": "#9B9FA4"
+  },
+  "font.caption": {
+    "$type": "dimension",
+    "$value": 14
+  },
+  "font.control": {
+    "$type": "dimension",
+    "$value": 20
+  },
+  "space.xs": {
+    "$type": "dimension",
+    "$value": 4
+  },
+  "radius.pill": {
+    "$type": "dimension",
+    "$value": 100
+  },
+  "radius.field": {
+    "$type": "dimension",
+    "$value": 8
+  },
+  "radius.check": {
+    "$type": "dimension",
+    "$value": 6
+  },
+  "space.nm": {
+    "$type": "dimension",
+    "$value": 12
+  },
+  "space.xl": {
+    "$type": "dimension",
+    "$value": 32
+  },
+  "color.textSecondary": {
+    "$type": "color",
+    "$value": "#4D5258"
+  },
+  "color.brandStrong": {
+    "$type": "color",
+    "$value": "#1B49BD"
+  }
+}

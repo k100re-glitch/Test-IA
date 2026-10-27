@@ -1,0 +1,138 @@
+{
+  "name": "Lisière",
+  "description": "Exemple fictif fourni avec le starter. Ateliers de quartier.",
+  "tokens": {
+    "color.brand": {
+      "$type": "color",
+      "$value": "#3154C4"
+    },
+    "color.brandHover": {
+      "$type": "color",
+      "$value": "#243F99"
+    },
+    "color.onBrand": {
+      "$type": "color",
+      "$value": "#FFFFFF"
+    },
+    "color.surface": {
+      "$type": "color",
+      "$value": "#FFFFFF"
+    },
+    "color.canvas": {
+      "$type": "color",
+      "$value": "#F3F5FA"
+    },
+    "color.text": {
+      "$type": "color",
+      "$value": "#19243D"
+    },
+    "color.muted": {
+      "$type": "color",
+      "$value": "#536078"
+    },
+    "color.border": {
+      "$type": "color",
+      "$value": "#BCC5D6"
+    },
+    "color.danger": {
+      "$type": "color",
+      "$value": "#B4233E"
+    },
+    "color.success": {
+      "$type": "color",
+      "$value": "#18734B"
+    },
+    "color.focus": {
+      "$type": "color",
+      "$value": "#7856C8"
+    },
+    "font.family": {
+      "$type": "fontFamily",
+      "$value": "system-ui"
+    },
+    "font.body": {
+      "$type": "dimension",
+      "$value": 16
+    },
+    "font.heading": {
+      "$type": "dimension",
+      "$value": 28
+    },
+    "space.sm": {
+      "$type": "dimension",
+      "$value": 8
+    },
+    "space.md": {
+      "$type": "dimension",
+      "$value": 16
+    },
+    "space.lg": {
+      "$type": "dimension",
+      "$value": 24
+    },
+    "radius.control": {
+      "$type": "dimension",
+      "$value": 10
+    },
+    "color.brandSurface": {
+      "$type": "color",
+      "$value": "#E7ECF8"
+    },
+    "color.surfaceMuted": {
+      "$type": "color",
+      "$value": "#F7F8FC"
+    },
+    "color.surfaceSunken": {
+      "$type": "color",
+      "$value": "#EDF0F7"
+    },
+    "color.dangerSurface": {
+      "$type": "color",
+      "$value": "#F7E2E6"
+    },
+    "color.placeholder": {
+      "$type": "color",
+      "$value": "#8A94A8"
+    },
+    "font.caption": {
+      "$type": "dimension",
+      "$value": 14
+    },
+    "font.control": {
+      "$type": "dimension",
+      "$value": 20
+    },
+    "space.xs": {
+      "$type": "dimension",
+      "$value": 4
+    },
+    "radius.pill": {
+      "$type": "dimension",
+      "$value": 100
+    },
+    "radius.field": {
+      "$type": "dimension",
+      "$value": 8
+    },
+    "radius.check": {
+      "$type": "dimension",
+      "$value": 6
+    },
+    "space.nm": {
+      "$type": "dimension",
+      "$value": 12
+    },
+    "space.xl": {
+      "$type": "dimension",
+      "$value": 32
+    },
+    "color.textSecondary": {
+      "$type": "color",
+      "$value": "#3B4660"
+    },
+    "color.brandStrong": {
+      "$type": "color",
+      "$value": "#243F99"
+    }
+  }
+}
