@@ -399,3 +399,71 @@ export function Filter({
     </button>
   );
 }
+
+// search-bar — porté depuis Figma (node 5495:63766), deux états.
+// 353 × 41, rayon 8, bordure 1, rembourrage horizontal 12, gouttière 8.
+//
+// Figma décrit les deux états comme deux variantes figées. Ici ils sont ce
+// qu'ils sont réellement : un champ de recherche natif. La bordure bleue
+// vient de :focus-within, le curseur bleu de caret-color, et la croix
+// apparaît dès qu'il y a du texte — les deux variantes du DS étant
+// exactement « vide » et « saisi ».
+//
+// Les deux icônes sont des SF Symbols dans Figma, donc sans calque
+// exportable : elles sont redessinées et suivent la couleur du champ.
+// Le calque de droite y est nommé « magnifying-glass », mais le rendu du
+// nœud 4158:32393 montre une croix : c'est le rendu qui fait foi.
+function MagnifierIcon() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <circle cx="7" cy="7" r="4.6" />
+      <path d="M10.4 10.4 14 14" />
+    </svg>
+  );
+}
+
+function ClearIcon() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M3.8 3.8l8.4 8.4M12.2 3.8l-8.4 8.4" />
+    </svg>
+  );
+}
+
+export function SearchBar({
+  value,
+  onChange,
+  label = 'Rechercher un expéditeur',
+  placeholder = 'Search sender',
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  label?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div className="ds-search">
+      <span className="ds-search-mark" aria-hidden="true">
+        <MagnifierIcon />
+      </span>
+      <input
+        type="search"
+        className="ds-search-input"
+        aria-label={label}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {value !== '' && (
+        <button
+          type="button"
+          className="ds-search-clear"
+          onClick={() => onChange('')}
+        >
+          <span className="ds-visually-hidden">Effacer la recherche</span>
+          <ClearIcon />
+        </button>
+      )}
+    </div>
+  );
+}

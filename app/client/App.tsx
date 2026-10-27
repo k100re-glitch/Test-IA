@@ -139,7 +139,7 @@ export default function App() {
       </a>
       <header className="studio-header">
         <div className="wordmark">
-          <img className="brand-logo" src={logo} alt="" width={40} height={40} />
+          <img className="brand-logo" src={logo} alt="" width={34} height={34} />
           <div>
             <strong>Inbox Zapper</strong>
             <span>Design System</span>

@@ -9,6 +9,7 @@ import {
   Modal,
   Radio,
   ScanLimit,
+  SearchBar,
   Tag,
   TextField,
   Toggle,
@@ -53,6 +54,10 @@ function useCatalogue(): Entry[] {
   const [choice, setChoice] = useState('a');
   const [on, setOn] = useState(true);
   const [text, setText] = useState('');
+  // Deux champs distincts : les variantes du DS sont le champ vide et le
+  // champ saisi, elles doivent rester indépendantes à l'écran.
+  const [search, setSearch] = useState('');
+  const [searchTyped, setSearchTyped] = useState('Dav');
   const tones = [
     ['primary', 'primary'],
     ['secondary', 'secondary'],
@@ -390,7 +395,7 @@ function useCatalogue(): Entry[] {
       name: 'scan_free_limit',
       eyebrow: '5 variantes',
       description:
-        "\u00c9tat d'avancement du scan, 353 px. Carte cliquable c\u00f4t\u00e9 premium, ligne centr\u00e9e c\u00f4t\u00e9 freemium.",
+        "État d'avancement du scan, 353 px. Carte cliquable c\u00f4t\u00e9 premium, ligne centr\u00e9e c\u00f4t\u00e9 freemium.",
       preview: (
         <div className="prev-stack prev-scaled">
           <ScanLimit plan="premium" state="scanning" />
@@ -400,31 +405,31 @@ function useCatalogue(): Entry[] {
       ),
       variants: [
         {
-          label: 'premium \u00b7 scanning',
+          label: 'premium · scanning',
           wide: true,
           code: '<ScanLimit plan="premium" state="scanning" onOpen={open} />',
           node: <ScanLimit plan="premium" state="scanning" />,
         },
         {
-          label: 'premium \u00b7 scan limit reached',
+          label: 'premium · scan limit reached',
           wide: true,
           code: '<ScanLimit plan="premium" state="limit" onOpen={goPro} />',
           node: <ScanLimit plan="premium" state="limit" />,
         },
         {
-          label: 'premium \u00b7 completed',
+          label: 'premium · completed',
           wide: true,
           code: '<ScanLimit plan="premium" state="completed" />',
           node: <ScanLimit plan="premium" state="completed" />,
         },
         {
-          label: 'freemium \u00b7 scanning',
+          label: 'freemium · scanning',
           wide: true,
           code: '<ScanLimit plan="freemium" state="scanning" />',
           node: <ScanLimit plan="freemium" state="scanning" />,
         },
         {
-          label: 'freemium \u00b7 completed',
+          label: 'freemium · completed',
           wide: true,
           code: '<ScanLimit plan="freemium" state="completed" />',
           node: <ScanLimit plan="freemium" state="completed" />,
@@ -436,9 +441,9 @@ function useCatalogue(): Entry[] {
       id: 'filters',
       family: 'Actions',
       name: 'filters',
-      eyebrow: '2 \u00e9tats',
+      eyebrow: '2 états',
       description:
-        'Puce de filtre \u00e0 rayon plein, texte 14 et chevron 20. Inactive sur gris, active sur bleu clair.',
+        'Puce de filtre à rayon plein, texte 14 et chevron 20. Inactive sur gris, active sur bleu clair.',
       preview: (
         <div className="prev-row">
           <Filter>text</Filter>
@@ -457,7 +462,36 @@ function useCatalogue(): Entry[] {
           node: <Filter active>text</Filter>,
         },
       ],
-      situations: [{ scenario: 'sender', label: 'Exp\u00e9diteurs' }],
+      situations: [{ scenario: 'sender', label: 'Expéditeurs' }],
+    },
+    {
+      id: 'search-bar',
+      family: 'Formulaire',
+      name: 'search-bar',
+      eyebrow: '2 états',
+      description:
+        'Champ de recherche 353 × 41. Bordure bleue au focus, croix dès qu’il y a du texte.',
+      preview: (
+        <div className="prev-stack">
+          <SearchBar value="" onChange={() => {}} />
+          <SearchBar value="Dav" onChange={() => {}} />
+        </div>
+      ),
+      variants: [
+        {
+          label: 'state=default',
+          wide: true,
+          code: '<SearchBar value={q} onChange={setQ} />',
+          node: <SearchBar value={search} onChange={setSearch} />,
+        },
+        {
+          label: 'state=focus',
+          wide: true,
+          code: '<SearchBar value={q} onChange={setQ} placeholder="Search sender" />',
+          node: <SearchBar value={searchTyped} onChange={setSearchTyped} />,
+        },
+      ],
+      situations: [{ scenario: 'sender', label: 'Expéditeurs' }],
     },
   ];
 }
@@ -473,6 +507,7 @@ const exported: Record<string, string> = {
   text_field: 'TextField',
   modal: 'Modal',
   filters: 'Filter',
+  'search-bar': 'SearchBar',
   scan_free_limit: 'ScanLimit',
 };
 function snippet(entry: Entry) {

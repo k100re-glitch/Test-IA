@@ -135,3 +135,33 @@ neuf cartes ont une scène de 320 et un bloc de texte au même décalage.
 et la bannière disparaît sur une fiche : c'est un décor d'accueil, qui sinon
 repousse le contenu sous la ligne de flottaison. Le catalogue ne connaît pas ce
 qui l'entoure : il prévient la page par `onOpenChange`, c'est elle qui décide.
+
+## 2026-10-27 — search-bar et logo
+
+**Décision.** `search-bar` (node Figma `5495:63766`) n'a demandé aucun token
+nouveau : bordure, rayon, rembourrage, gouttière et taille de texte existaient
+tous. Le schéma reste en version 4, 39 tokens.
+
+Figma décrit les deux états comme deux variantes figées. L'implémentation en
+fait ce qu'ils sont réellement : un champ natif. La bordure bleue vient de
+`:focus-within`, le curseur bleu de `caret-color` — Figma le dessine comme une
+barre de 0,5 × 17, c'est le curseur du navigateur — et la croix apparaît dès
+qu'il y a du texte, les deux variantes du DS étant exactement « vide » et
+« saisi ». La croix native de `type="search"` est neutralisée pour ne pas
+doubler le bouton.
+
+**Preuves exécutées.** `npm test` : 32/32. Géométrie mesurée : 353 × 41, rayon
+8, bordure `#D5D7D9` au repos et `#007BFF` au focus, curseur `#007BFF`.
+
+**Écart assumé.** Les deux icônes sont des SF Symbols, donc sans calque
+exportable : elles sont redessinées et suivent la couleur du champ. Le calque
+de droite est nommé « heroicons-mini/magnifying-glass » dans Figma, mais le
+rendu du nœud `4158:32393` montre une croix : c'est le rendu qui fait foi, et
+une croix est seule cohérente avec un champ saisi. Nom de calque à corriger
+dans Figma.
+
+**Logo.** Remplacé par le glyphe détouré fourni, et ramené de 43 à 34 px. Le
+rayon de 22 % a été retiré : il arrondissait la tuile bleue de l'ancienne
+marque et rognerait les coins de l'enveloppe, qui va jusqu'au bord. Le fichier
+n'est pas tout à fait carré (305 × 294), d'où `object-fit: contain`. Le favicon
+porte encore l'ancienne marque.
