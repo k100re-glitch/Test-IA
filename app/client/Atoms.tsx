@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import bellMark from './stickers/bell.png';
+import bellMark from './brand/modal-bell.svg';
 
 // Atomes portés depuis la page components_list d'Inbox Zapper.
 // Les valeurs viennent des tokens : aucune couleur ni dimension en dur ici.
@@ -192,7 +192,8 @@ export function TextField({
 export type ModalState = 'two' | 'one' | 'none' | 'stacked';
 
 // L'illustration est un emplacement : les écrans y passent la leur. Par
-// défaut c'est la cloche, comme le slot du composant dans Figma.
+// défaut c'est le dessin du slot de Figma, en SVG : il reste net à toute
+// taille, contrairement à l'export matriciel qui plafonne à 72 px.
 function ModalMark() {
   return <img src={bellMark} alt="" aria-hidden="true" draggable={false} />;
 }

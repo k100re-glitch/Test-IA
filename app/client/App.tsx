@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Scenario } from './DesignSystem.js';
 import CanvasBoard from './CanvasBoard.js';
 import logo from './brand/logo.png';
-import banner from './brand/banner.jpg';
+import Banner from './Banner.js';
 import TokensTab from './TokensTab.js';
 import {
   bootstrap,
@@ -202,9 +202,7 @@ export default function App() {
           </ol>
         </section>
       )}
-      <div className="banner">
-        <img src={banner} alt="" aria-hidden="true" />
-      </div>
+      <Banner />
       <CanvasBoard
         actions={
       <div className="cat-actions">
