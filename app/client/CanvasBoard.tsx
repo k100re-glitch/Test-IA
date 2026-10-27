@@ -5,8 +5,10 @@ import MockupFrame, { mockups } from './Mockups.js';
 import {
   Button,
   Checkbox,
+  Filter,
   Modal,
   Radio,
+  ScanLimit,
   Tag,
   TextField,
   Toggle,
@@ -382,6 +384,81 @@ function useCatalogue(): Entry[] {
       ],
       situations: [{ scenario: 'choice', label: 'Anciens e-mails' }],
     },
+    {
+      id: 'scan_free_limit',
+      family: 'Surfaces',
+      name: 'scan_free_limit',
+      eyebrow: '5 variantes',
+      description:
+        "\u00c9tat d'avancement du scan, 353 px. Carte cliquable c\u00f4t\u00e9 premium, ligne centr\u00e9e c\u00f4t\u00e9 freemium.",
+      preview: (
+        <div className="prev-stack prev-scaled">
+          <ScanLimit plan="premium" state="scanning" />
+          <ScanLimit plan="premium" state="limit" />
+          <ScanLimit state="completed" />
+        </div>
+      ),
+      variants: [
+        {
+          label: 'premium \u00b7 scanning',
+          wide: true,
+          code: '<ScanLimit plan="premium" state="scanning" onOpen={open} />',
+          node: <ScanLimit plan="premium" state="scanning" />,
+        },
+        {
+          label: 'premium \u00b7 scan limit reached',
+          wide: true,
+          code: '<ScanLimit plan="premium" state="limit" onOpen={goPro} />',
+          node: <ScanLimit plan="premium" state="limit" />,
+        },
+        {
+          label: 'premium \u00b7 completed',
+          wide: true,
+          code: '<ScanLimit plan="premium" state="completed" />',
+          node: <ScanLimit plan="premium" state="completed" />,
+        },
+        {
+          label: 'freemium \u00b7 scanning',
+          wide: true,
+          code: '<ScanLimit plan="freemium" state="scanning" />',
+          node: <ScanLimit plan="freemium" state="scanning" />,
+        },
+        {
+          label: 'freemium \u00b7 completed',
+          wide: true,
+          code: '<ScanLimit plan="freemium" state="completed" />',
+          node: <ScanLimit plan="freemium" state="completed" />,
+        },
+      ],
+      situations: [{ scenario: 'home', label: 'Accueil' }],
+    },
+    {
+      id: 'filters',
+      family: 'Actions',
+      name: 'filters',
+      eyebrow: '2 \u00e9tats',
+      description:
+        'Puce de filtre \u00e0 rayon plein, texte 14 et chevron 20. Inactive sur gris, active sur bleu clair.',
+      preview: (
+        <div className="prev-row">
+          <Filter>text</Filter>
+          <Filter active>text</Filter>
+        </div>
+      ),
+      variants: [
+        {
+          label: 'state=false',
+          code: '<Filter onClick={openMenu}>text</Filter>',
+          node: <Filter>text</Filter>,
+        },
+        {
+          label: 'state=true',
+          code: '<Filter active onClick={openMenu}>text</Filter>',
+          node: <Filter active>text</Filter>,
+        },
+      ],
+      situations: [{ scenario: 'sender', label: 'Exp\u00e9diteurs' }],
+    },
   ];
 }
 
@@ -395,6 +472,8 @@ const exported: Record<string, string> = {
   toggle: 'Toggle',
   text_field: 'TextField',
   modal: 'Modal',
+  filters: 'Filter',
+  scan_free_limit: 'ScanLimit',
 };
 function snippet(entry: Entry) {
   const lines = entry.variants
@@ -462,23 +541,38 @@ export default function CanvasBoard({
   picker,
   tokensView,
   actions,
+  onOpenChange,
 }: {
   tokens: Tokens;
   picker?: ReactNode;
   tokensView?: ReactNode;
   actions?: ReactNode;
+  // Prévient la page qu'une fiche est ouverte : c'est elle qui décide quoi
+  // faire de son décor, le catalogue ne connaît pas ce qui l'entoure.
+  onOpenChange?: (id?: string) => void;
 }) {
   const [open, setOpen] = useState<string>();
   const [tab, setTab] = useState<'components' | 'tokens'>('components');
+  // Ouvrir ou fermer une fiche remonte en haut : sans cela on arrive au
+  // milieu d'une page qui vient de changer entièrement de contenu.
+  const show = (id?: string) => {
+    setOpen(id);
+    onOpenChange?.(id);
+    scrollTo({ top: 0 });
+  };
   const entries = useCatalogue();
   const current = entries.find((e) => e.id === open);
   const style = tokenCss(tokens) as CSSProperties;
   const total = entries.reduce((n, e) => n + e.variants.length, 0);
   return (
-    <div className="cat" id="cat-title" tabIndex={-1}>
+    <div
+      className={`cat${current ? ' is-flush' : ''}`}
+      id="cat-title"
+      tabIndex={-1}
+    >
       <div className="cat-crumb-row">
         <nav className="cat-crumbs" aria-label="Fil d’Ariane">
-          <button type="button" onClick={() => setOpen(undefined)}>
+          <button type="button" onClick={() => show(undefined)}>
             Design System
           </button>
           <span className="cat-sep" aria-hidden="true">
@@ -486,7 +580,7 @@ export default function CanvasBoard({
           </span>
           {current ? (
             <>
-              <button type="button" onClick={() => setOpen(undefined)}>
+              <button type="button" onClick={() => show(undefined)}>
                 Composants
               </button>
               <span className="cat-sep" aria-hidden="true">
@@ -557,7 +651,7 @@ export default function CanvasBoard({
             <button
               type="button"
               className="cat-back-btn"
-              onClick={() => setOpen(undefined)}
+              onClick={() => show(undefined)}
             >
               <svg
                 width="15"
@@ -596,7 +690,7 @@ export default function CanvasBoard({
           <button
             type="button"
             className="cat-back"
-            onClick={() => setOpen(undefined)}
+            onClick={() => show(undefined)}
           >
             ← Tous les composants
           </button>
@@ -630,7 +724,7 @@ export default function CanvasBoard({
                       key={e.id}
                       type="button"
                       className="cat-card"
-                      onClick={() => setOpen(e.id)}
+                      onClick={() => show(e.id)}
                     >
                       <span className="cat-stage cat-grey">
                         {e.preview}

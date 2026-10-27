@@ -17,6 +17,9 @@ import {
   contrast,
   dimensionMax,
   tokensAddedInV2,
+  tokensAddedInV3,
+  tokensAddedInV4,
+  stateVersion,
   tokenKeys,
   fontFamilies,
 } from '../app/shared/model.js';
@@ -258,14 +261,24 @@ test('le schéma élargi accepte une police ajoutée sans invalider un état exi
     store.propose(1, [{ key: 'font.heading', value: dimensionMax + 1 }]),
   );
 });
-test('migration v1 → v2 : complète les tokens sans toucher au journal', async (t) => {
+test('migration depuis la v1 : complète les tokens sans toucher au journal', async (t) => {
   const { store } = await fixture(t);
-  // Un état écrit par la version précédente : 18 tokens, version 1,
-  // et une révision déjà au journal.
+  // Un état écrit par la toute première version : seulement les tokens
+  // d'origine, version 1, et une révision déjà au journal. Les clés sont
+  // dérivées des tables d'ajout, pour que le test suive chaque nouvelle
+  // version sans être réécrit.
+  const addedSince = {
+    ...tokensAddedInV2,
+    ...tokensAddedInV3,
+    ...tokensAddedInV4,
+  };
   const v1Tokens: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(seed))
-    if (!(key in tokensAddedInV2)) v1Tokens[key] = structuredClone(value);
-  assert.equal(Object.keys(v1Tokens).length, tokenKeys.length - Object.keys(tokensAddedInV2).length);
+    if (!(key in addedSince)) v1Tokens[key] = structuredClone(value);
+  assert.equal(
+    Object.keys(v1Tokens).length,
+    tokenKeys.length - Object.keys(addedSince).length,
+  );
   (v1Tokens['color.brand'] as { $value: string }).$value = '#123456';
   const legacy = {
     version: 1,
@@ -292,10 +305,10 @@ test('migration v1 → v2 : complète les tokens sans toucher au journal', async
   await reopened.init();
   const migrated = reopened.snapshot();
   // La version monte, les clés nouvelles arrivent, rien d'ancien ne bouge.
-  assert.equal(migrated.version, 2);
+  assert.equal(migrated.version, stateVersion);
   assert.equal(Object.keys(migrated.tokens).length, tokenKeys.length);
   assert.equal(migrated.tokens['color.brand'].$value, '#123456');
-  for (const key of Object.keys(tokensAddedInV2))
+  for (const key of Object.keys(addedSince))
     assert.ok(key in migrated.tokens, `clé manquante : ${key}`);
   // Le journal est conservé à l'identique : ni effacé, ni réécrit.
   assert.equal(migrated.revision, 1);

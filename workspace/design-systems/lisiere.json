@@ -133,6 +133,30 @@
     "color.brandStrong": {
       "$type": "color",
       "$value": "#243F99"
+    },
+    "color.warning": {
+      "$type": "color",
+      "$value": "#E78300"
+    },
+    "color.warningSurface": {
+      "$type": "color",
+      "$value": "#FFF7ED"
+    },
+    "color.warningCanvas": {
+      "$type": "color",
+      "$value": "#FEFAF5"
+    },
+    "color.warningText": {
+      "$type": "color",
+      "$value": "#513210"
+    },
+    "color.successSurface": {
+      "$type": "color",
+      "$value": "#EEF9E9"
+    },
+    "color.brandTint": {
+      "$type": "color",
+      "$value": "#E1EFFE"
     }
   }
 }

@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react';
 import bellMark from './brand/modal-bell.svg';
+import checkCircle from './icons/check-circle.svg';
+import loadingLarge from './icons/loading.svg';
+import loadingSmall from './icons/loading-sm.svg';
+import warningTriangle from './icons/exclamation-triangle.svg';
+import chevronDown from './icons/chevron-down.svg';
+import chevronDownBrand from './icons/chevron-down-brand.svg';
 
 // Atomes portés depuis la page components_list d'Inbox Zapper.
 // Les valeurs viennent des tokens : aucune couleur ni dimension en dur ici.
@@ -272,5 +278,124 @@ export function Modal({
         </div>
       )}
     </div>
+  );
+}
+
+// scan_free_limit — porté depuis Figma (node 8047:17777), deux jeux de
+// variantes. Largeur 353, rayon 12.
+//
+//   premium  — une carte cliquable : pastille d'icône 40, titre 16/500,
+//              sous-titre 14/400, chevron. États scanning et limit.
+//   freemium — une seule ligne centrée, icône 16 et texte 14/500.
+//
+// L'état « completed » est identique dans les deux jeux (mêmes fonds,
+// rembourrages et gouttière) : il n'est donc écrit qu'une fois.
+//
+// Les quatre icônes viennent de l'export Figma. Leur couleur y est cuite
+// dans le fichier : changer color.success ou color.warning dans l'atelier
+// ne les suivra pas. Les redessiner les ferait suivre les tokens au prix de
+// la fidélité du tracé ; l'écart est consigné dans workspace/DECISIONS.md.
+export type ScanPlan = 'premium' | 'freemium';
+export type ScanState = 'scanning' | 'limit' | 'completed';
+
+// Chevron : dans Figma c'est un SF Symbol, pas un calque exportable. Il suit
+// la couleur du titre, comme à l'écran.
+function Chevron() {
+  return (
+    <svg viewBox="0 0 25 25" aria-hidden="true" focusable="false">
+      <path d="M9.5 5.5 17 12.5 9.5 19.5" />
+    </svg>
+  );
+}
+
+export function ScanLimit({
+  plan = 'premium',
+  state = 'scanning',
+  onOpen,
+}: {
+  plan?: ScanPlan;
+  state?: ScanState;
+  onOpen?: () => void;
+}) {
+  if (state === 'completed')
+    return (
+      <p className="ds-scan ds-scan-flat ds-scan-completed" role="status">
+        <img src={checkCircle} alt="" aria-hidden="true" />
+        Inbox Scan Completed
+      </p>
+    );
+  if (plan === 'freemium')
+    return (
+      <p className="ds-scan ds-scan-flat ds-scan-waiting" role="status">
+        <img src={loadingSmall} alt="" aria-hidden="true" />
+        Scanning your inbox...
+      </p>
+    );
+  const limit = state === 'limit';
+  // La rangée entière est l'élément cliquable : le chevron n'est qu'un
+  // repère visuel, il ne porte pas l'action à lui seul.
+  return (
+    <button
+      type="button"
+      className={`ds-scan ds-scan-card ds-scan-${limit ? 'limit' : 'scanning'}`}
+      onClick={onOpen}
+    >
+      <span className="ds-scan-tile">
+        <img
+          src={limit ? warningTriangle : loadingLarge}
+          alt=""
+          aria-hidden="true"
+        />
+      </span>
+      <span className="ds-scan-text">
+        <span className="ds-scan-title">
+          {limit ? 'Scan limit reached' : 'Scanning your inbox...'}
+        </span>
+        {/* Les deux libellés sont repris tels quels du DS, coquille
+            « scaninng » comprise : l'atelier reflète Figma, il ne le
+            corrige pas en douce. */}
+        <span className="ds-scan-sub">
+          {limit
+            ? 'Go Pro to resume scaninng.'
+            : 'Up to 10.000 mails with Free plan'}
+        </span>
+      </span>
+      <span className="ds-scan-go" aria-hidden="true">
+        <Chevron />
+      </span>
+    </button>
+  );
+}
+
+// filters — porté depuis Figma (node 5548:65591), deux états.
+// Puce de filtre : texte 14/500 et chevron 20, rembourrage 8/12, rayon plein.
+// Figma pose un rayon de 48 : au-delà de la moitié de la hauteur, toute
+// valeur donne le même stade, radius.pill est donc utilisé tel quel.
+//
+// Les deux chevrons sont deux exports distincts, leur couleur est cuite dans
+// le fichier comme celles de scan_free_limit.
+export function Filter({
+  active = false,
+  children,
+  onClick,
+}: {
+  active?: boolean;
+  children: ReactNode;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`ds-filter${active ? ' is-active' : ''}`}
+      aria-pressed={active}
+      onClick={onClick}
+    >
+      {children}
+      <img
+        src={active ? chevronDownBrand : chevronDown}
+        alt=""
+        aria-hidden="true"
+      />
+    </button>
   );
 }

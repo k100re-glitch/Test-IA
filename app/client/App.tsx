@@ -78,6 +78,9 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [saving, setSaving] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  // La bannière est un décor d'accueil. Sur la fiche d'un composant elle
+  // n'apporte rien et repousse le contenu sous la ligne de flottaison.
+  const [componentOpen, setComponentOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const cancelButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -202,8 +205,9 @@ export default function App() {
           </ol>
         </section>
       )}
-      <Banner />
+      {!componentOpen && <Banner />}
       <CanvasBoard
+        onOpenChange={(id) => setComponentOpen(!!id)}
         actions={
       <div className="cat-actions">
         <button onClick={() => void perform(exportTokens)}>

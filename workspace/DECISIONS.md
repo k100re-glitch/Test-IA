@@ -52,3 +52,86 @@ elle est aplatie sur blanc en `#F8E1E1`, donc fausse sur un fond non blanc. Les
 icônes des boutons ne sont pas reprises. Contrastes mesurés sur les trois
 presets, sous 4,5:1 pour la couleur d'invite des champs partout, et pour les
 boutons secondaire, dangerSoft et le tag primaire sur le preset fidèle.
+
+## 2026-10-27 — scan_free_limit et migration v2 → v3
+
+**Problème.** Le composant `scan_free_limit` (node Figma `8047:17777`) porte un
+état « scan limit reached » bâti sur la famille `status/warning` et son brun
+d'accompagnement, plus un état « completed » sur `status/success-surface`.
+Aucune des 33 clés de la version 2 ne couvrait ces cinq couleurs : ni
+`color.danger` ni `color.dangerSurface` ne sont des avertissements, et
+`color.success` n'a pas de surface associée.
+
+**Options explorées.**
+
+1. Coder les cinq couleurs en dur dans la feuille de style. Écarté pour la même
+   raison qu'en version 2 : un fond codé en dur ne se propage pas.
+2. Réutiliser la famille `danger` pour l'avertissement. Écarté : le DS les
+   distingue, et les confondre ferait lire un plafond atteint comme une erreur.
+3. **Retenu :** ajouter les cinq clés que le composant exige réellement.
+
+**Décision.** Schéma porté à 38 tokens, version d'état 3. La migration parcourt
+désormais les deux tables d'ajout : un état v1 saute directement en v3, un état
+v2 ne reçoit que les cinq clés manquantes. Rien d'existant n'est touché.
+
+**Preuves exécutées.** `npm test` : 32/32. Le test de migration ne cite plus de
+numéro de version ni de compte en dur : il dérive les deux des tables d'ajout,
+donc il suivra la version 4 sans réécriture. Vérifié sur l'état réel de la
+machine : `/api/state` renvoie version 3, 38 tokens, révision 6 et les six
+entrées du journal intactes. Géométrie mesurée dans le navigateur contre
+Figma : carte 353 × 66, pastille 40 × 40, icône 22,22, chevron 25, ligne plate
+353 × 49.
+
+**Écarts assumés avec Figma.**
+
+- `status/success-surface` vaut `rgba(81, 194, 35, 0.1)`. Le schéma n'accepte
+  que `#RRGGBB` : la valeur est aplatie sur blanc en `#EEF9E9`. Exact sur fond
+  blanc, approché ailleurs. Élargir le format des couleurs à l'alpha toucherait
+  aussi le calcul de contraste ; c'est un autre chantier.
+- Les quatre icônes sont les exports Figma, couleur cuite dans le fichier.
+  Changer `color.success` ou `color.warning` dans l'atelier ne les suivra pas.
+  Les redessiner les rendrait solidaires des tokens au prix de la fidélité du
+  tracé ; la fidélité a été préférée, le composant étant donné comme pixel
+  perfect.
+- Le chevron est un SF Symbol dans Figma, donc non exportable. Il est redessiné
+  et suit la couleur du titre, comme à l'écran.
+- Le libellé « Go Pro to resume scaninng. » porte une coquille dans le DS. Il
+  est repris tel quel : l'atelier reflète Figma, il ne le corrige pas en douce.
+  À corriger dans Figma.
+
+**Limites connues.** Les trois presets du catalogue reçoivent les cinq clés avec
+les valeurs d'Inbox Zapper. Pour « Lisière », qui a sa propre palette, ce sont
+des valeurs de repli neutres et non un choix de design.
+
+## 2026-10-27 — filters, migration v3 → v4 et alignement du catalogue
+
+**Problème.** Le composant `filters` (node Figma `5548:65591`) pose sa puce
+active sur `primary/blue-100`, un bleu très clair. `color.brandSurface`
+(`#EDF1F9`) est `action/keep-surface` : un autre bleu, pour un autre usage.
+Aucune clé existante ne porte celui-ci.
+
+**Décision.** Une seule clé ajoutée, `color.brandTint`, schéma porté à 39
+tokens, version d'état 4. Figma pose un rayon de 48 sur la puce ; au-delà de
+la moitié de la hauteur toute valeur donne le même stade, `radius.pill` est
+donc utilisé plutôt qu'une valeur inventée.
+
+**Preuves exécutées.** `npm test` : 32/32, sans retoucher le test de migration
+— il dérive version et comptes des tables d'ajout depuis la version 3.
+`/api/state` : version 4, 39 tokens, révision 6 et les six entrées du journal
+intactes. Géométrie mesurée : puce 36 de haut, chevron 20, fonds `#F7F7F8` et
+`#E1EFFE`, textes `#4D5258` et `#007BFF`.
+
+**Écart assumé.** Les deux chevrons sont deux exports distincts, couleur cuite
+dans le fichier, comme pour `scan_free_limit`.
+
+**Alignement des vignettes.** Les aperçus d'index sont réduits par `transform:
+scale`, qui ne change pas la boîte de mise en page : une vignette haute, comme
+la modale, poussait le texte de sa carte plus bas que celui de sa voisine. La
+scène d'index passe d'une hauteur minimale à une hauteur fixe de 320, avec
+débordement masqué — seule la boîte déborde, jamais le dessin. Vérifié : les
+neuf cartes ont une scène de 320 et un bloc de texte au même décalage.
+
+**Bannière et défilement.** Ouvrir ou fermer une fiche remonte en haut de page,
+et la bannière disparaît sur une fiche : c'est un décor d'accueil, qui sinon
+repousse le contenu sous la ligne de flottaison. Le catalogue ne connaît pas ce
+qui l'entoure : il prévient la page par `onOpenChange`, c'est elle qui décide.

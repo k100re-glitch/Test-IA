@@ -58,6 +58,17 @@ export const tokensSchema = z
     // bleu soutenu des actions « garder », distincts de muted et de brand.
     'color.textSecondary': color,
     'color.brandStrong': color,
+    // Ajoutés en version 3 pour le composant scan_free_limit : la famille
+    // status/warning et son brun d'accompagnement, plus la teinte de succès.
+    // Le DS les exprime en Figma ; aucun des tokens précédents ne les couvre.
+    'color.warning': color,
+    'color.warningSurface': color,
+    'color.warningCanvas': color,
+    'color.warningText': color,
+    'color.successSurface': color,
+    // Ajouté en version 4 pour le composant filters : le bleu très clair des
+    // puces actives, distinct de brandSurface qui est le bleu des actions.
+    'color.brandTint': color,
     'font.family': font,
     'font.body': dimension,
     'font.heading': dimension,
@@ -106,8 +117,10 @@ export interface Revision {
   source: 'manual' | 'codex' | 'import' | 'undo';
   patches: Patch[];
 }
-// Version du fichier d'état. La version 2 ajoute onze tokens pour les atomes.
-export const stateVersion = 2;
+// Version du fichier d'état. La version 2 ajoute quinze tokens pour les
+// atomes, la version 3 cinq couleurs d'état pour scan_free_limit, la
+// version 4 le bleu clair des puces de filtre.
+export const stateVersion = 4;
 export interface State {
   version: typeof stateVersion;
   revision: number;
@@ -136,6 +149,28 @@ export const tokensAddedInV2: Record<string, { $type: string; $value: TokenValue
   'radius.check': { $type: 'dimension', $value: 6 },
 };
 
+// Valeurs de repli des clés ajoutées en version 3, relevées sur Figma.
+//
+// status/success-surface vaut rgba(81, 194, 35, 0.1) dans le DS. Le schéma
+// n'accepte que #RRGGBB : la valeur est donc aplatie sur blanc, ce qui donne
+// le même rendu partout où le composant est posé sur une surface blanche,
+// et un rendu légèrement différent ailleurs. Élargir le format des couleurs
+// à l'alpha toucherait aussi le calcul de contraste : c'est un autre
+// chantier, consigné dans workspace/DECISIONS.md.
+export const tokensAddedInV3: Record<string, { $type: string; $value: TokenValue }> = {
+  'color.warning': { $type: 'color', $value: '#E78300' },
+  'color.warningSurface': { $type: 'color', $value: '#FFF7ED' },
+  'color.warningCanvas': { $type: 'color', $value: '#FEFAF5' },
+  'color.warningText': { $type: 'color', $value: '#513210' },
+  'color.successSurface': { $type: 'color', $value: '#EEF9E9' },
+};
+
+// Valeur de repli de la clé ajoutée en version 4, relevée sur Figma
+// (primary/blue-100).
+export const tokensAddedInV4: Record<string, { $type: string; $value: TokenValue }> = {
+  'color.brandTint': { $type: 'color', $value: '#E1EFFE' },
+};
+
 // Complète un état lu sur disque sans rien supprimer : les tokens déjà
 // présents gardent leur valeur, le journal et la révision sont intacts. Une
 // clé inconnue n'est pas retirée ici : la validation stricte la signalera,
@@ -152,7 +187,11 @@ export function migrateState(input: unknown): unknown {
   // doit pas devenir illisible.
   const next = { ...(tokens as Record<string, unknown>) };
   let added = false;
-  for (const [key, value] of Object.entries(tokensAddedInV2))
+  for (const [key, value] of [
+    ...Object.entries(tokensAddedInV2),
+    ...Object.entries(tokensAddedInV3),
+    ...Object.entries(tokensAddedInV4),
+  ])
     if (!(key in next)) {
       next[key] = { ...value };
       added = true;

@@ -1599,11 +1599,14 @@ h2[id] {
   justify-items: center;
   margin: -20px -20px 0;
   padding: 26px 22px;
-  min-height: 320px;
+  height: 320px;
+  overflow: hidden;
   border-bottom: 1px solid var(--cat-line);
 }
 .cat-spec .cat-stage {
+  height: auto;
   min-height: 150px;
+  overflow: visible;
 }
 .cat-grey {
   background: var(--cat-stage);
@@ -2162,6 +2165,9 @@ h2[id] {
 .cat-spec.is-wide .cat-stage > .ds-modal {
   width: 345px;
 }
+.cat-spec.is-wide .cat-stage > .ds-scan {
+  width: 353px;
+}
 
 /* bouton de copie d'extrait */
 .cat-head-actions {
@@ -2323,6 +2329,14 @@ h2[id] {
   margin-top: -22px;
   border-top: 0;
   border-radius: 22px 22px 0 0;
+}
+.cat.is-flush {
+  margin-top: 0;
+  border-top: 1px solid var(--cat-line);
+  border-radius: 0;
+}
+.cat.is-flush .cat-crumb-row {
+  padding-top: 26px;
 }
 .studio-footer {
   position: relative;
@@ -2511,4 +2525,157 @@ h2[id] {
   .banner {
     height: 150px;
   }
+}
+
+/* scan_free_limit — node Figma 8047:17777. Largeur 353, rayon 12.
+   Les deux dispositions du composant : une ligne centrée pour les états
+   d'information, une carte cliquable pour les états qui mènent quelque part.
+   Les lettrages négatifs du DS valent -0,01 em aux deux tailles (-0,16 px
+   sur 16, -0,14 px sur 14) : la valeur relative tient donc si la taille de
+   police change dans l'atelier. */
+.ds-scan {
+  box-sizing: border-box;
+  width: 353px;
+  max-width: 100%;
+  border-radius: var(--radius-control);
+  font-family: var(--font-family);
+  line-height: normal;
+  letter-spacing: -0.01em;
+  overflow: clip;
+}
+.ds-scan-flat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: var(--space-md) var(--space-nm);
+  font-size: var(--font-caption);
+  font-weight: 500;
+}
+.ds-scan-flat img {
+  display: block;
+  flex: none;
+}
+.ds-scan-completed {
+  gap: var(--space-xs);
+  background: var(--color-successSurface);
+  color: var(--color-success);
+}
+.ds-scan-waiting {
+  gap: var(--space-sm);
+  background: var(--color-surfaceSunken);
+  color: var(--color-textSecondary);
+}
+.ds-scan-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-nm);
+  border: 1px solid;
+  text-align: left;
+  cursor: pointer;
+}
+.ds-scan-scanning {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+.ds-scan-limit {
+  background: var(--color-warningCanvas);
+  border-color: var(--color-warningSurface);
+  color: var(--color-warningText);
+}
+.ds-scan-tile {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-field);
+  overflow: clip;
+}
+/* L'icône garde la taille portée par le SVG lui-même (22,22 et 24) : la
+   pastille est dimensionnée, pas le tracé. */
+.ds-scan-tile img {
+  display: block;
+  flex: none;
+}
+.ds-scan-scanning .ds-scan-tile {
+  background: var(--color-brandSurface);
+}
+.ds-scan-limit .ds-scan-tile {
+  background: var(--color-warningSurface);
+}
+/* La colonne de texte prend la place restante : le chevron est ainsi poussé
+   au bord sans dépendre d'une justification entre deux groupes. */
+.ds-scan-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+.ds-scan-title {
+  font-size: var(--font-body);
+  font-weight: 500;
+}
+.ds-scan-sub {
+  font-size: var(--font-caption);
+  font-weight: 400;
+}
+.ds-scan-scanning .ds-scan-sub {
+  color: var(--color-muted);
+}
+/* Figma pose ce texte en brun à 65 % : une opacité reproduit exactement la
+   couche alpha, quel que soit le fond derrière. */
+.ds-scan-limit .ds-scan-sub {
+  opacity: 0.65;
+}
+.ds-scan-go {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+}
+.ds-scan-go svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* filters — node Figma 5548:65591. Puce de filtre, deux états. */
+.ds-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-nm);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-surfaceMuted);
+  color: var(--color-textSecondary);
+  font-family: var(--font-family);
+  font-size: var(--font-caption);
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  overflow: clip;
+}
+.ds-filter.is-active {
+  background: var(--color-brandTint);
+  color: var(--color-brand);
+}
+/* Le chevron garde la taille portée par le SVG lui-même (20). */
+.ds-filter img {
+  display: block;
+  flex: none;
 }
