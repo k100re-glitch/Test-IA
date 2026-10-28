@@ -2580,6 +2580,23 @@ h2[id] {
   border: 1px solid;
   text-align: left;
   cursor: pointer;
+  transition: background-color 120ms ease;
+}
+/* Au survol, la carte prend la teinte de la pastille qui porte l'icône : le
+   fond passe du canevas très pâle à la surface d'état, déjà présente dans le
+   composant. Aucune couleur nouvelle n'est introduite. */
+.ds-scan-scanning:hover,
+.ds-scan-scanning:focus-visible {
+  background: var(--color-brandSurface);
+}
+.ds-scan-limit:hover,
+.ds-scan-limit:focus-visible {
+  background: var(--color-warningSurface);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-scan-card {
+    transition: none;
+  }
 }
 .ds-scan-scanning {
   background: var(--color-surface);

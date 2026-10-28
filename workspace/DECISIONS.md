@@ -165,3 +165,22 @@ rayon de 22 % a été retiré : il arrondissait la tuile bleue de l'ancienne
 marque et rognerait les coins de l'enveloppe, qui va jusqu'au bord. Le fichier
 n'est pas tout à fait carré (305 × 294), d'où `object-fit: contain`. Le favicon
 porte encore l'ancienne marque.
+
+## Bannière : nouvel export, et survol de scan_free_limit
+
+**Bannière.** Troisième export remplacé tel quel. Les dimensions source sont
+identiques aux précédentes (6294 × 1908, ratio 3,30), donc aucun réglage CSS
+n'a bougé : le cadre montre toujours 67 % de la hauteur de l'image, sans coupe
+latérale, et le titre tient entier à 375 px. L'image est réduite à 4400 px de
+large, soit 263 Ko.
+
+**Survol.** Au survol et au focus clavier, la carte `scan_free_limit` prend le
+fond de la pastille qui porte son icône : `color.warningSurface` pour l'état
+limite, `color.brandSurface` pour l'état scanning. Aucune couleur nouvelle
+n'entre dans le système, le survol suit donc les tokens. Les deux états
+cliquables sont traités pareil, par symétrie.
+
+**Écart assumé.** Les deux fonds devenant identiques, la pastille disparaît
+visuellement pendant le survol : l'icône semble posée à même la carte. C'est la
+conséquence directe de la règle demandée. La transition de 120 ms est
+neutralisée sous `prefers-reduced-motion`.
