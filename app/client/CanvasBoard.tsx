@@ -2,6 +2,7 @@ import { useState, type CSSProperties, type ReactNode } from 'react';
 import { tokenCss, tokenKeys, type Tokens } from '../shared/model.js';
 import CopyButton from './CopyButton.js';
 import MockupFrame, { mockups } from './Mockups.js';
+import { sectionId, tokenSections } from './TokensTab.js';
 import {
   Button,
   Checkbox,
@@ -36,6 +37,43 @@ interface Situation {
 }
 // Familles de composants. L'ordre ci-dessous est celui de l'affichage.
 const families = ['Actions', 'Formulaire', 'Surfaces'] as const;
+
+// Un pictogramme par famille, au trait et hérité de la couleur du libellé :
+// dans une liste de dix entrées, l'œil retrouve un groupe à sa silhouette plus
+// vite qu'à son nom. Ils sont décoratifs, le nom de la famille est écrit juste
+// à côté.
+const familyIcons: Record<(typeof families)[number], ReactNode> = {
+  // éclair : le déclenchement
+  Actions: <path d="M11.2 2.4 4.6 11.2h4.2l-1 6.4 6.6-8.8h-4.2z" />,
+  // champ et ligne de saisie
+  Formulaire: (
+    <>
+      <rect x="2.6" y="4.2" width="14.8" height="11.6" rx="2.4" />
+      <path d="M5.8 9.4h5.2" />
+    </>
+  ),
+  // plans empilés
+  Surfaces: (
+    <>
+      <rect x="2.6" y="2.8" width="10.6" height="10.6" rx="2.4" />
+      <path d="M6.8 17.2h8a2.4 2.4 0 0 0 2.4-2.4v-8" />
+    </>
+  ),
+};
+
+function FamilyIcon({ family }: { family: (typeof families)[number] }) {
+  return (
+    <svg
+      className="cat-fam-icon"
+      width="14"
+      height="14"
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+    >
+      {familyIcons[family]}
+    </svg>
+  );
+}
 type Family = (typeof families)[number];
 
 interface Entry {
@@ -49,7 +87,7 @@ interface Entry {
   situations: Situation[];
 }
 
-function useCatalogue(): Entry[] {
+export function useCatalogue(): Entry[] {
   const [checked, setChecked] = useState(true);
   const [choice, setChoice] = useState('a');
   const [on, setOn] = useState(true);
@@ -74,12 +112,12 @@ function useCatalogue(): Entry[] {
       description:
         'Cinq intentions, trois tailles. H1 et H2 pleine largeur, sm pour les cartes.',
       preview: (
+        // Deux boutons suffisent à montrer le contraste primaire / secondaire ;
+        // le troisième allongeait la vignette sans rien dire de plus. Les onze
+        // autres variantes sont sur la fiche.
         <div className="prev-stack">
           <Button block>Text</Button>
           <Button tone="secondary" size="h2" block>
-            Text
-          </Button>
-          <Button tone="danger" size="sm" block>
             Text
           </Button>
         </div>
@@ -355,7 +393,7 @@ function useCatalogue(): Entry[] {
       description:
         'Bo\u00eete de dialogue 345 px, rembourrage et rayon \u00e0 24. Deux boutons, un, aucun, ou empil\u00e9s.',
       preview: (
-        <div className="prev-scaled">
+        <div className="prev-scaled prev-scaled-sm">
           <Modal state="two" title="Here your title">
             The description of your pop-up should be written here.
           </Modal>
@@ -472,7 +510,7 @@ function useCatalogue(): Entry[] {
       description:
         'Champ de recherche 353 × 41. Bordure bleue au focus, croix dès qu’il y a du texte.',
       preview: (
-        <div className="prev-stack">
+        <div className="prev-stack prev-scaled">
           <SearchBar value="" onChange={() => {}} />
           <SearchBar value="Dav" onChange={() => {}} />
         </div>
@@ -588,12 +626,19 @@ export default function CanvasBoard({
 }) {
   const [open, setOpen] = useState<string>();
   const [tab, setTab] = useState<'components' | 'tokens'>('components');
-  // Ouvrir ou fermer une fiche remonte en haut : sans cela on arrive au
-  // milieu d'une page qui vient de changer entièrement de contenu.
+  // Ouvrir ou fermer une fiche remonte en haut : sans cela on arrive au milieu
+  // d'une page qui vient de changer entièrement de contenu. La remontée est
+  // animée — un saut instantané double le changement de contenu d'un
+  // changement de position, et on ne sait plus où l'on a atterri.
   const show = (id?: string) => {
     setOpen(id);
     onOpenChange?.(id);
-    scrollTo({ top: 0 });
+    scrollTo({
+      top: 0,
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+    });
   };
   const entries = useCatalogue();
   const current = entries.find((e) => e.id === open);
@@ -611,7 +656,7 @@ export default function CanvasBoard({
             Design System
           </button>
           <span className="cat-sep" aria-hidden="true">
-            /
+            ›
           </span>
           {current ? (
             <>
@@ -619,11 +664,11 @@ export default function CanvasBoard({
                 Composants
               </button>
               <span className="cat-sep" aria-hidden="true">
-                /
+                ›
               </span>
               <span className="cat-family-crumb">{current.family}</span>
               <span className="cat-sep" aria-hidden="true">
-                /
+                ›
               </span>
               <span className="cat-current" aria-current="page">
                 {current.name}
@@ -667,6 +712,96 @@ export default function CanvasBoard({
         </div>
       )}
 
+      <div className="cat-layout">
+        {/* Sommaire permanent. Sans lui, choisir un composant demandait de
+            dérouler tout le catalogue, puis de le dérouler à nouveau pour
+            passer au suivant. Il reste visible dans les deux onglets : depuis
+            les tokens, cliquer un composant bascule d'onglet et l'ouvre. */}
+        {/* Le sommaire suit l'onglet : les composants d'un côté, les familles
+            de tokens de l'autre. Un sommaire qui reste sur les composants
+            pendant qu'on lit les tokens ne sert plus à rien. */}
+        {tokensView && tab === 'tokens' ? (
+          <aside className="cat-nav" aria-label="Familles de tokens">
+            {tokenSections.map((s) => (
+              <button
+                key={s.title}
+                type="button"
+                className="cat-nav-all"
+                onClick={() => {
+                  const target = document.getElementById(sectionId(s.title));
+                  if (!target) return;
+                  // 100 px : la hauteur de l'en-tête collante, plus l'air qui
+                  // évite que le titre touche son bord.
+                  scrollTo({
+                    top: target.getBoundingClientRect().top + scrollY - 100,
+                    behavior: matchMedia('(prefers-reduced-motion: reduce)')
+                      .matches
+                      ? 'auto'
+                      : 'smooth',
+                  });
+                }}
+              >
+                {s.title}
+                <span>{s.count}</span>
+              </button>
+            ))}
+          </aside>
+        ) : (
+        <aside className="cat-nav" aria-label="Composants">
+          <button
+            type="button"
+            className={`cat-nav-all${!current && tab === 'components' ? ' is-on' : ''}`}
+            aria-current={!current && tab === 'components' ? 'true' : undefined}
+            onClick={() => {
+              setTab('components');
+              show(undefined);
+            }}
+          >
+            Tous les composants
+            <span>{entries.length}</span>
+          </button>
+          {families
+            .map((family) => ({
+              family,
+              items: entries.filter((e) => e.family === family),
+            }))
+            .filter((g) => g.items.length > 0)
+            .map((g) => (
+              <div key={g.family} className="cat-nav-group">
+                <h4>
+                  <FamilyIcon family={g.family} />
+                  {g.family}
+                </h4>
+                <ul>
+                  {g.items.map((e) => (
+                    <li key={e.id}>
+                      <button
+                        type="button"
+                        className={
+                          current?.id === e.id && tab === 'components'
+                            ? 'is-on'
+                            : undefined
+                        }
+                        aria-current={
+                          current?.id === e.id && tab === 'components'
+                            ? 'page'
+                            : undefined
+                        }
+                        onClick={() => {
+                          setTab('components');
+                          show(e.id);
+                        }}
+                      >
+                        {e.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+        </aside>
+        )}
+        <div className="cat-main">
       {tokensView && tab === 'tokens' ? (
         <>
           <header className="cat-head">
@@ -750,6 +885,7 @@ export default function CanvasBoard({
             .map((g) => (
               <section key={g.family} className="cat-family">
                 <h4>
+                  <FamilyIcon family={g.family} />
                   {g.family}
                   <span>{g.items.length}</span>
                 </h4>
@@ -789,6 +925,8 @@ export default function CanvasBoard({
             ))}
         </>
       )}
+        </div>
+      </div>
     </div>
   );
 }

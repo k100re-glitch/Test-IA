@@ -20,6 +20,25 @@ const groups: { title: string; keys: TokenKey[] }[] = [
   { title: 'Shapes', keys: tokenKeys.filter((k) => k.startsWith('radius.')) },
 ];
 
+// L'identifiant d'ancre se déduit du titre : une table de correspondance
+// séparée finirait par mentir le jour où un titre change.
+export const sectionId = (title: string) =>
+  `dm-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
+// Le sommaire de l'onglet a besoin des mêmes sections que la page, comptées
+// de la même façon : on les déclare ici, à côté de ce qu'elles décrivent.
+export const tokenSections = [
+  {
+    title: 'Primitive Colors',
+    count: primitive.reduce((n, g) => n + g.rows.length, 0),
+  },
+  {
+    title: 'Semantic Colors',
+    count: semantic.reduce((n, g) => n + g.rows.length, 0),
+  },
+  ...groups.map((g) => ({ title: g.title, count: g.keys.length })),
+];
+
 
 
 // Les deux planches du fichier Figma, reprises telles quelles.
@@ -158,7 +177,7 @@ export default function TokensTab({ tokens }: { tokens: Tokens }) {
         {brandContrast >= 4.5 ? 'AA texte courant' : 'contraste à améliorer'}.
         Cette indication ne certifie pas tous les états.
       </p>
-      <section className="dm-group">
+      <section className="dm-group" id={sectionId('Primitive Colors')}>
         <h3>Primitive Colors</h3>
         <p className="dm-lead">
           Les 112 couleurs sources, par famille. Ce sont les valeurs brutes du
@@ -166,7 +185,7 @@ export default function TokensTab({ tokens }: { tokens: Tokens }) {
         </p>
         <PrimitiveTable />
       </section>
-      <section className="dm-group">
+      <section className="dm-group" id={sectionId('Semantic Colors')}>
         <h3>Semantic Colors</h3>
         <p className="dm-lead">
           Les 50 rôles du design system, avec leur valeur en mode clair et en
@@ -175,7 +194,11 @@ export default function TokensTab({ tokens }: { tokens: Tokens }) {
         <SemanticTable />
       </section>
       {groups.map((group) => (
-        <section key={group.title} className="dm-group">
+        <section
+          key={group.title}
+          className="dm-group"
+          id={sectionId(group.title)}
+        >
           <h3>{group.title}</h3>
           <div className="dm-swatches">
             {group.keys.map((k) => {

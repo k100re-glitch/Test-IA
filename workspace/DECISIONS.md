@@ -184,3 +184,310 @@ cliquables sont traités pareil, par symétrie.
 visuellement pendant le survol : l'icône semble posée à même la carte. C'est la
 conséquence directe de la règle demandée. La transition de 120 ms est
 neutralisée sous `prefers-reduced-motion`.
+
+## Coque de l'atelier : passage au registre « produit »
+
+**Ce qui change.** Les trois références fournies partagent une grammaire
+unique : un canevas gris sur lequel flotte une fenêtre blanche à grand rayon,
+des filets d'un pixel plutôt que des cadres, des contrôles bas et serrés
+(34 px, rayon 9), un seul bouton noir par écran, des onglets soulignés, des
+libellés de section en petites capitales grises. Elle est appliquée à
+l'en-tête, au fil d'Ariane, aux onglets, au titre de page, aux cartes, aux
+tableaux de tokens, à l'historique, au diff et au pied.
+
+**Ce qui ne change pas.** Aucun spécimen Inbox Zapper n'est touché. La
+frontière tient parce que chaque bloc `.ds-*` déclare `font-family:
+var(--font-family)` et puise ses couleurs dans les tokens : changer la police
+et les gris de la coque ne les atteint pas. C'est l'outil qui est redessiné,
+pas le produit.
+
+**Trois décisions.** `#root` porte la fenêtre : c'est déjà l'enveloppe unique
+de l'application, lui donner le cadre évite un div ajouté pour le seul style.
+Le plan de travail passe en gris `#ebecf0` et les fiches restent blanches :
+c'est ce contraste, et non un cadre appuyé, qui détache les cartes dans les
+références — un premier essai en `#fafafb` les faisait disparaître. La colonne
+de contenu passe de 860 à 1000 px, la fenêtre étant plafonnée à 1320.
+
+**Écarts assumés.** Le titre de page quitte le registre éditorial (44 px
+maigre) pour un titre de produit compact et gras : c'est un changement de ton,
+pas un réglage. Sous 740 px l'état « Figma non connecté » est masqué — trois
+contrôles empilés contre la droite coûtaient trois rangées pour une
+information de service.
+
+**Trois reprises après coup.** La fenêtre flottante — canevas gris, carte
+blanche à grand rayon — a été retirée : elle rogne la place utile d'un outil
+qui n'a qu'un seul écran. Le plan de travail et les scènes des cartes
+repassent en blanc, et le chevauchement arrondi du catalogue sur la bannière
+disparaît : ces deux coins de 22 px remontés sur l'image dessinaient un
+contour en relief qui n'appartenait à rien. Les spécimens blancs restent
+lisibles sur fond blanc, car la barre de recherche et la carte de scan portent
+leur propre bordure, héritée de Figma.
+
+## Sommaire permanent et cartes au bon gabarit
+
+**Le problème.** Le catalogue se parcourait en déroulant : pour passer d'un
+composant à un autre il fallait remonter, retrouver sa carte, redescendre. Et
+les cartes étaient énormes — une scène de 320 px de haut pour des composants
+qui en occupent 40 à 70, dans une colonne plafonnée à 1000 px sur un écran
+deux fois plus large.
+
+**Le sommaire.** Une colonne de 216 px à gauche, collée en haut pendant le
+défilement, qui liste les dix composants par famille et marque celui qui est
+ouvert. Il reste visible dans les deux onglets : depuis les tokens, cliquer un
+composant bascule d'onglet et l'ouvre. Sous 1060 px il passe au-dessus du
+contenu en une rangée qui défile horizontalement — une colonne de 216 px prise
+sur 700 px de large coûterait plus qu'elle ne rapporte.
+
+**Les cartes.** Scène ramenée à 192 px, colonne ouverte à 1480 px, quatre
+cartes de ~350 px par rangée sur un grand écran. 192 px est la hauteur de la
+plus haute vignette (la pile de trois boutons, 161 px) plus son rembourrage ;
+en dessous, elle se faisait rogner. 350 px est la largeur des spécimens les
+plus larges du DS (353 px).
+
+**Deux vignettes à part.** La barre de recherche (353 px fixes) et la modale
+(345 × 307) ne tiennent pas dans une carte de 318 px : elles passent par
+`prev-scaled`, le réducteur déjà employé ailleurs dans le fichier, la modale à
+une échelle plus basse car c'est le seul spécimen plus haut que large. Les
+fiches de détail, elles, montrent les composants à leur taille réelle.
+
+
+
+## Nouvelle bannière, et pictogrammes de famille
+
+**La bannière.** L'ancienne image sombre (`banner.jpg`, 263 Ko) et son
+parallaxe sont supprimés, ainsi que les règles devenues mortes. À la même
+place, en pleine largeur : le fond en dégradé bleu fourni (`banner-bg.jpg`,
+52 Ko) et, posé dessus, le verrou de marque — glyphe, nom sur deux lignes,
+filet vertical, « Design System World ». Le bandeau fait 320 px, 212 sur
+mobile. Tout est récupérable dans l'historique Git.
+
+**Le fond a dû être reconstruit.** L'image fournie portait le logo incrusté :
+s'en servir telle quelle l'aurait dupliqué. La bande qui le contenait
+(lignes 285 à 435) a été refaite en interpolant entre la ligne au-dessus et
+celle en dessous. Le dégradé variant lentement en vertical, le raccord ne se
+voit pas.
+
+**Le filet vertical** sépare deux marques de même rang, comme un cartouche de
+partenariat. C'est pour cela que « Design System World » est en graisse
+normale et non en gras : ce n'est pas un second logo, c'est ce que la page
+montre.
+
+**Pictogrammes.** Un signe au trait par famille — éclair pour Actions, champ
+pour Formulaire, plans empilés pour Surfaces — dans le sommaire et sur les
+intertitres du catalogue. Ils héritent de la couleur du libellé, donc ils
+suivent l'état actif.
+
+**Deux essais abandonnés.** Une en-tête à l'américaine — pastille, titre en
+deux tons, sous-titre, deux boutons — avait été montée d'après une référence
+de page d'accueil : retirée, cet atelier n'a pas à se vendre à qui l'ouvre.
+Puis un panneau de composants vivants posé sur un dégradé pastel, coupé par le
+bas du bandeau : remplacé par le verrou de marque demandé.
+
+## Historique en modale, et aperçus mis en valeur
+
+**L'historique.** Il s'affichait en panneau déroulant, inséré entre l'en-tête et
+la bannière : il poussait la page vers le bas et se lisait comme un bloc de
+contenu de plus. Il passe en `<dialog>` ouvert par `showModal()`, ce qui
+apporte le fond, le piège à focus et la fermeture par Échap sans une ligne de
+script. L'en-tête de la boîte reprend le fil d'Ariane de la page — on sait d'où
+l'on vient — et porte la croix de fermeture.
+
+**La chronologie.** Une entrée par révision, de la plus récente à la plus
+ancienne, reliées par un filet continu : l'historique est une suite, pas un
+tas. Le point de la révision en tête est plein, les autres sont gris. Les
+tokens touchés passent en puces plutôt qu'en liste séparée par des virgules :
+on en compte le nombre d'un coup d'œil. 1,3 Ko de CSS devenu mort a été
+supprimé avec l'ancien panneau.
+
+**Les aperçus.** Les spécimens flottaient à même la carte blanche : rien ne
+disait où commençait le composant et où finissait la fiche. La scène devient un
+encadré — teinte à peine marquée, filet d'un pixel, coins arrondis, léger creux
+— dans l'index comme dans les fiches de détail.
+
+**La ligne que je n'ai pas franchie.** Le creux est porté par l'encadré, pas par
+le composant. Mettre une ombre sous une carte de scan ou une barre de recherche
+les ferait mentir : ces ombres n'existent pas dans le fichier Figma, et le
+catalogue est censé montrer ce que le design system contient, pas ce qui le
+flatte.
+
+**L'icône Actions.** Le curseur en aplat se lisait mal à 14 px — une pointe
+étroite et une diagonale. Remplacé par un éclair au trait, cohérent avec les
+deux autres familles qui sont aussi au trait.
+
+**Rayons concentriques.** Le rayon extérieur vaut l'intérieur plus l'écart qui
+les sépare : scène à 8, rembourrage de 14, carte à 22. Avec deux rayons égaux
+de part et d'autre d'un écart, les arrondis ne sont pas parallèles et le coin
+a l'air sale.
+
+**Aperçu du bouton.** Deux boutons au lieu de trois. Le contraste primaire /
+secondaire se lit avec deux ; le troisième allongeait la vignette sans rien
+dire de plus. Les onze autres variantes sont sur la fiche. La plus haute
+vignette du catalogue est désormais la modale (160 px), non plus la pile de
+boutons.
+
+## Parallaxe, remontée animée, en-tête translucide
+
+**Parallaxe, en deux mouvements qui se composent.** La bannière est accrochée
+sous l'en-tête et le catalogue, opaque et au plan supérieur, vient la
+recouvrir : le fond ne bouge pas du tout, et tout le mouvement est celui du
+contenu qui passe dessus. Par-dessus cela, le dessin glisse dans son cadre
+pendant qu'il est ainsi retenu. Le cadre étant immobile, le décalage se lit
+sur le défilement de la page et non sur la position du cadre. L'image dépasse
+de 80 %, elle garde donc une marge de 40 % de la hauteur du cadre de chaque
+côté ; la vitesse vaut exactement cette fraction et le défilement pris en
+compte est plafonné à la hauteur du cadre — le glissement maximal atteint la
+marge sans jamais la dépasser, quelle que soit la hauteur de la bannière. Le
+déplacement est lu dans une frame d'animation : rien n'est recalculé pendant
+l'événement de défilement, et la parallaxe est désactivée sous
+`prefers-reduced-motion`.
+
+**Remontée animée.** Ouvrir ou fermer une fiche remonte en haut en douceur
+plutôt que d'un saut. Un saut instantané double le changement de contenu d'un
+changement de position, et on ne sait plus où l'on a atterri. `auto` sous
+`prefers-reduced-motion`.
+
+**En-tête translucide.** Blanc à 72 % et `backdrop-filter: blur(18px)
+saturate(180%)`. Le flou n'a de sens que s'il a quelque chose à flouter :
+l'en-tête devient donc collante et la bannière passe dessous — c'est aussi ce
+qui donne sa portée à la parallaxe, le dégradé glissant derrière un verre
+dépoli au lieu de disparaître par le haut. L'aplat blanc reste nécessaire
+sous le flou : `backdrop-filter` n'est pas honoré partout, et sans lui
+l'en-tête serait illisible sur le bleu. Le sommaire se cale 17 px sous
+l'en-tête, sans quoi ses premières entrées passeraient derrière le verre.
+
+
+## L'historique devient une popup
+
+**Pourquoi.** En modale centrée, l'historique noircissait la page et bloquait
+tout derrière lui. Or ce n'est pas une décision à prendre : c'est une
+information qu'on consulte à côté de ce qu'on lisait. Il devient une popup qui
+tombe sous son bouton, alignée à droite comme lui.
+
+**Comment.** L'API popover s'en charge : calque supérieur, fermeture par Échap
+et au clic en dehors, sans une ligne pour les câbler. Il reste à réaccorder
+l'état sur l'événement `toggle` — sans quoi, après une fermeture que nous
+n'avons pas provoquée, le bouton se croit encore ouvert et le clic suivant ne
+fait rien.
+
+**Position.** L'en-tête est collante et haute de 71 px : la position de la
+popup est donc connue d'avance, ce qui évite de calculer un ancrage à chaque
+ouverture. Sous 740 px elle s'étend d'un bord à l'autre.
+
+**L'ouverture de la popup.** Elle descend de 10 px en grandissant de 3 %,
+depuis le coin haut droit — celui du bouton qui l'ouvre. L'origine fait tout :
+un même mouvement parti du centre donnerait l'impression d'une boîte qui
+surgit, là où partir du bouton donne celle d'un panneau qui se déplie depuis
+lui.
+
+Deux durées, parce que la transition qui joue est celle de l'état d'arrivée :
+la règle de base gouverne l'ouverture, celle de l'état fermé la fermeture.
+340 ms pour entrer, 160 pour sortir — une popup qu'on ouvre se regarde
+arriver, une popup qu'on ferme doit libérer la vue tout de suite. La courbe
+d'entrée décélère franchement : le mouvement part vite et s'installe, ce qui
+se lit comme lent sans donner l'impression d'attendre.
+
+Un popover est en `display: none` quand il est fermé : sans `allow-discrete` et
+`@starting-style`, il n'y a pas d'état de départ à animer et il apparaîtrait
+d'un coup. Là où ces deux-là ne sont pas honorés, c'est exactement ce qui se
+passe — la popup s'affiche sans transition, et rien n'est cassé. Les valeurs calculées sont vérifiées
+côté navigateur : 340 ms et `cubic-bezier(0.16, 1, 0.3, 1)` à l'ouverture,
+160 ms et `ease` à la fermeture.
+
+**Le filet sous l'en-tête** est retiré : le flou marque déjà la séparation, et
+un trait par-dessus un dégradé bleu se voit plus que l'en-tête elle-même.
+
+**Survol d'une carte.** Seul le fond s'allume. Ni ombre portée, qui faisait
+décoller la carte du plan de travail alors que rien ne s'ouvre encore, ni
+filet renforcé, qui redessinait le contour au passage de la souris. Le
+soulèvement d'un pixel part avec l'ombre : privé d'elle, il se lirait comme un
+tremblement. Le fond du survol reste plus clair que le plan de travail et plus
+sombre que la scène, de sorte que le spécimen demeure l'élément le plus
+lumineux de la carte.
+
+**L'ombre de la popup.** Une seule couche à 18 % traçait un bord net sous la
+boîte et la faisait tomber sur la page. Remplacée par cinq couches où, à
+chaque palier, le flou double pendant que l'opacité reste entre 4 et 7 % : le
+halo s'éteint progressivement et la popup a l'air posée, pas lâchée. Un
+sixième anneau sans décalage ni flou remplace la bordure — il suit le rayon
+sans ajouter de trait.
+
+**Le corps de la popup défile.** Empilés dans un bloc, l'en-tête et le corps
+prennent la hauteur de leur contenu : le corps dépassait la hauteur maximale
+de la popup, qui se contentait de le rogner, et il n'y avait rien à faire
+défiler. En colonne flex, le corps reçoit la hauteur qui reste —
+`min-height: 0` étant ce qui l'autorise à être plus court que son contenu.
+Mesuré : 777 px de contenu dans 499 px visibles.
+
+## Fermeture de la popup, et sommaire qui suit l'onglet
+
+**Un vrai bug.** La règle `display: flex` posée sans condition sur `.sheet`
+reprenait au popover fermé le `display: none` qu'il tient de la feuille du
+navigateur. La popup restait donc affichée, invisible mais posée par-dessus la
+page — et comme la transition de `display` n'avait plus rien à faire, la
+fermeture ne s'achevait jamais. `display` est maintenant posé sur
+`.sheet:popover-open`. Mesuré : à 60 ms après la demande de fermeture, opacité
+0,37 et `display: flex` ; 400 ms plus tard, `display: none`.
+
+**Le sommaire suit l'onglet.** Il listait les composants même pendant la
+lecture des tokens, où il ne servait plus à rien. Dans l'onglet Tokens il
+liste désormais les cinq sections de la page — Primitive Colors, Semantic
+Colors, Typography, Spacing, Shapes — et chaque entrée y mène, avec la même
+remontée animée qu'ailleurs, décalée de 100 px pour passer sous l'en-tête
+collante.
+
+**Les compteurs sont calculés, pas écrits.** 112 et 50 sont comptés sur
+`primitive.json` et `semantic.json`, les trois autres sur les clés de tokens.
+Le texte de la page annonçait déjà ces nombres en dur ; les recopier dans le
+sommaire aurait créé un deuxième endroit où ils peuvent mentir. L'identifiant
+d'ancre se déduit du titre pour la même raison.
+
+## Bouton Commit, défilement inertiel, alignement
+
+**Commit.** « Exporter les tokens » devient « Commit », marque GitHub en
+blanc. Il écrit les tokens courants dans `workspace/design-system.tokens.json`
+puis les valide. Trois bornes, posées dans `app/server/git.ts` :
+
+- *Un seul fichier.* `.ds-studio/` est l'état privé d'exécution et ne doit
+  jamais être commité ; le fichier versionnable est celui du workspace. Son
+  chemin est écrit en dur, jamais reçu par HTTP. `git commit --only` ne touche
+  pas au reste de l'index.
+- *Aucun shell.* `execFile` reçoit un tableau d'arguments : il n'y a pas de
+  ligne de commande à interpréter, donc rien à y injecter. Le seul texte
+  variable du message est un entier, la révision, lue dans l'état du serveur
+  et non dans la requête — la route n'accepte aucun paramètre.
+- *Commit, pas de push.* Pousser publie ; c'est une autre décision, qui se
+  prend ailleurs et explicitement. La réponse le dit à l'écran.
+
+Quand rien n'a changé, la route répond « déjà à jour » au lieu de fabriquer un
+commit vide. Preuve exécutée : clic sur le bouton → `b5d07d2 Tokens du design
+system, révision 6`, un fichier, 60 insertions et 60 suppressions.
+
+**Défilement inertiel.** La molette pousse une cible que la position réelle
+rattrape d'un dixième à chaque frame : le mouvement continue un instant après
+le geste. Écrit à la main plutôt qu'emprunté à une bibliothèque — le projet
+tient sur trois dépendances, et une quatrième pour un effet de surface se
+paierait à chaque installation.
+
+Le rattrapage est réglé à 0,16 du chemin restant par frame, après un premier
+essai à 0,10 qui traînait derrière le geste. Le reste du trajet décroît en
+(1 - EASE) par frame, donc le glissement dure à peu près moitié moins sans
+cesser de se voir. Mesuré sur une impulsion de 600 px : 452 px après 60 ms,
+593 après 200 ms, posé avant 500 ms — contre 342 px à 60 ms et un mouvement
+encore en cours à une seconde dans le premier réglage.
+
+Il se retire de lui-même là où il nuirait : sur les zones qui défilent
+elles-mêmes (corps de la popup, sommaire, tableaux), sur écran tactile où le
+système fournit déjà son inertie, et sous `prefers-reduced-motion`. Le clavier
+et les ancres continuent de déplacer la page nativement ; la cible se
+réaccorde sur la position réelle dès que l'animation est au repos.
+
+**Alignement.** L'en-tête et le pied suivent la colonne de contenu par un
+rembourrage calculé — `max(32px, calc((100% - 1480px) / 2 + 32px))` — plutôt
+que par une largeur maximale : leur fond doit traverser toute la largeur,
+l'en-tête étant collante et floutée. Vérifié à 1900 px : marque et colonne
+commencent toutes deux à 242 px.
+
+**Retraits.** L'état « Figma non connecté » quitte l'en-tête ; l'appel de
+démarrage reste, c'est lui qui pose le jeton de session. L'ombre interne des
+scènes d'aperçu est retirée : l'encadré se suffit de sa teinte et de son
+filet.

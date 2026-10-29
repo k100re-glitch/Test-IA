@@ -7,8 +7,8 @@ import TokensTab from './TokensTab.js';
 import {
   bootstrap,
   commit,
-  exportTokens,
   getState,
+  gitCommit,
   request,
   type Bootstrap,
 } from './api.js';
@@ -72,7 +72,10 @@ export function Preview() {
 }
 export default function App() {
   const { state, setState, error: stateError } = useDesignState();
-  const [boot, setBoot] = useState<Bootstrap>();
+  // L'appel de démarrage est conservé pour lui-même : c'est lui qui pose le
+  // jeton de session utilisé par toutes les écritures. Sa réponse n'est plus
+  // affichée depuis que l'état Figma a quitté l'en-tête.
+  const [, setBoot] = useState<Bootstrap>();
   const [proposal, setProposal] = useState<Proposal>();
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -82,6 +85,7 @@ export default function App() {
   // n'apporte rien et repousse le contenu sous la ligne de flottaison.
   const [componentOpen, setComponentOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  const historyPopup = useRef<HTMLDivElement>(null);
   const cancelButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     bootstrap()
@@ -94,6 +98,17 @@ export default function App() {
       cancelButton.current?.focus();
     } else dialog.current?.close();
   }, [proposal]);
+  // L'historique s'ouvre en popup accrochée à son bouton. L'API popover fait
+  // le reste : calque supérieur, fermeture par Échap et au clic en dehors,
+  // sans fond assombri — c'est une pastille d'information, pas une décision à
+  // prendre, et rien ne justifie de bloquer la page derrière.
+  useEffect(() => {
+    const node = historyPopup.current;
+    if (!node) return;
+    const shown = node.matches(':popover-open');
+    if (historyOpen && !shown) node.showPopover();
+    else if (!historyOpen && shown) node.hidePopover();
+  }, [historyOpen]);
   const clearError = () => {
     setError('');
     setNotice('');
@@ -146,9 +161,9 @@ export default function App() {
           </div>
         </div>
         <div className="header-status">
-          <span className="local-badge">● Local · V2</span>
-          <span className="muted">
-            {boot?.figma.label ?? 'Figma non connecté'}
+          <span className="local-badge">
+            <i aria-hidden="true" />
+            Local · V2
           </span>
           <button
             onClick={() => setHistoryOpen(!historyOpen)}
@@ -170,24 +185,67 @@ export default function App() {
           </p>
         )}
       </div>
-      {historyOpen && (
-        <section className="history" aria-label="Historique des changements">
-          <h2>Un historique, pas un écrasement.</h2>
-          <p>
+      {/* Échap et le clic en dehors ferment la popup sans passer par nous : il
+          faut donc réaccorder l'état, sinon le bouton se croit encore ouvert
+          et le clic suivant ne fait rien. */}
+      <div
+        className="sheet"
+        popover="auto"
+        ref={historyPopup}
+        onToggle={(e) => setHistoryOpen(e.newState === 'open')}
+        aria-labelledby="history-title"
+      >
+        <header className="sheet-head">
+          <span className="sheet-crumb">
+            <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M10 5.4V10l3 1.8" />
+              <circle cx="10" cy="10" r="7.2" />
+            </svg>
+            Design System
+            <i aria-hidden="true">/</i>
+            <strong id="history-title">Historique</strong>
+          </span>
+          <button
+            type="button"
+            className="sheet-close"
+            onClick={() => setHistoryOpen(false)}
+            aria-label="Fermer l’historique"
+          >
+            <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m5.4 5.4 9.2 9.2M14.6 5.4l-9.2 9.2" />
+            </svg>
+          </button>
+        </header>
+        <div className="sheet-body">
+          <p className="sheet-lead">
             Annulez un changement précis. Les autres tokens restent intacts. Une
             annulation s’enregistre elle aussi.
           </p>
-          {!state.history.length && <p>Aucun changement enregistré.</p>}
-          <ol>
+          {!state.history.length && (
+            <p className="sheet-empty">Aucun changement enregistré.</p>
+          )}
+          {/* Une entrée par révision, de la plus récente à la plus ancienne,
+              reliées par un filet : l'historique est une suite, pas un tas. */}
+          <ol className="tl">
             {[...state.history].reverse().map((event) => (
               <li key={event.id}>
-                <div>
-                  <strong>Révision {event.revision}</strong> · {event.source} ·{' '}
-                  <time>{new Date(event.date).toLocaleString('fr-FR')}</time>
-                  <p>{event.patches.map((p) => p.key).join(', ')}</p>
+                <div className="tl-line">
+                  <strong>Révision {event.revision}</strong>
+                  <span className="tl-source">{event.source}</span>
+                  <time dateTime={event.date}>
+                    {new Date(event.date).toLocaleString('fr-FR')}
+                  </time>
+                </div>
+                <div className="tl-chips">
+                  {event.patches.map((p) => (
+                    <span key={p.key}>{p.key}</span>
+                  ))}
                 </div>
                 <button
-                  onClick={() =>
+                  type="button"
+                  className="tl-undo"
+                  onClick={() => {
+                    setHistoryOpen(false);
                     void perform(async () =>
                       setProposal(
                         await request('undo', {
@@ -195,23 +253,36 @@ export default function App() {
                           id: event.id,
                         }),
                       ),
-                    )
-                  }
+                    );
+                  }}
                 >
                   Annuler la révision {event.revision}
                 </button>
               </li>
             ))}
           </ol>
-        </section>
-      )}
+        </div>
+      </div>
       {!componentOpen && <Banner />}
       <CanvasBoard
         onOpenChange={(id) => setComponentOpen(!!id)}
         actions={
       <div className="cat-actions">
-        <button onClick={() => void perform(exportTokens)}>
-          Exporter les tokens
+        {/* Commiter écrit les tokens courants dans le fichier versionnable du
+            workspace et les valide. Rien n'est poussé : publier est une autre
+            décision, qui se prend ailleurs. */}
+        <button
+          onClick={() =>
+            void perform(async () => {
+              const result = await gitCommit();
+              setNotice(result.message);
+            })
+          }
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8" />
+          </svg>
+          Commit
         </button>
         <label className="file-button">
           Importer un JSON
