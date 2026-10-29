@@ -43,34 +43,6 @@
     "$type": "color",
     "$value": "#007BFF"
   },
-  "font.family": {
-    "$type": "fontFamily",
-    "$value": "Inter"
-  },
-  "font.body": {
-    "$type": "dimension",
-    "$value": 16
-  },
-  "font.heading": {
-    "$type": "dimension",
-    "$value": 24
-  },
-  "space.sm": {
-    "$type": "dimension",
-    "$value": 8
-  },
-  "space.md": {
-    "$type": "dimension",
-    "$value": 16
-  },
-  "space.lg": {
-    "$type": "dimension",
-    "$value": 24
-  },
-  "radius.control": {
-    "$type": "dimension",
-    "$value": 12
-  },
   "color.brandSurface": {
     "$type": "color",
     "$value": "#EDF1F9"
@@ -90,38 +62,6 @@
   "color.placeholder": {
     "$type": "color",
     "$value": "#9B9FA4"
-  },
-  "font.caption": {
-    "$type": "dimension",
-    "$value": 14
-  },
-  "font.control": {
-    "$type": "dimension",
-    "$value": 20
-  },
-  "space.xs": {
-    "$type": "dimension",
-    "$value": 4
-  },
-  "radius.pill": {
-    "$type": "dimension",
-    "$value": 100
-  },
-  "radius.field": {
-    "$type": "dimension",
-    "$value": 8
-  },
-  "radius.check": {
-    "$type": "dimension",
-    "$value": 6
-  },
-  "space.nm": {
-    "$type": "dimension",
-    "$value": 12
-  },
-  "space.xl": {
-    "$type": "dimension",
-    "$value": 32
   },
   "color.textSecondary": {
     "$type": "color",
@@ -154,5 +94,65 @@
   "color.brandTint": {
     "$type": "color",
     "$value": "#E1EFFE"
+  },
+  "font.family": {
+    "$type": "fontFamily",
+    "$value": "Inter"
+  },
+  "font.body": {
+    "$type": "dimension",
+    "$value": 16
+  },
+  "font.heading": {
+    "$type": "dimension",
+    "$value": 24
+  },
+  "font.caption": {
+    "$type": "dimension",
+    "$value": 14
+  },
+  "font.control": {
+    "$type": "dimension",
+    "$value": 20
+  },
+  "space.xs": {
+    "$type": "dimension",
+    "$value": 4
+  },
+  "space.sm": {
+    "$type": "dimension",
+    "$value": 8
+  },
+  "space.nm": {
+    "$type": "dimension",
+    "$value": 12
+  },
+  "space.md": {
+    "$type": "dimension",
+    "$value": 16
+  },
+  "space.lg": {
+    "$type": "dimension",
+    "$value": 24
+  },
+  "space.xl": {
+    "$type": "dimension",
+    "$value": 32
+  },
+  "radius.control": {
+    "$type": "dimension",
+    "$value": 12
+  },
+  "radius.pill": {
+    "$type": "dimension",
+    "$value": 100
+  },
+  "radius.field": {
+    "$type": "dimension",
+    "$value": 8
+  },
+  "radius.check": {
+    "$type": "dimension",
+    "$value": 6
   }
 }
