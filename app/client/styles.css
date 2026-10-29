@@ -2870,14 +2870,20 @@ body {
   font-size: 12.5px;
   font-weight: 500;
 }
-.cat-actions > button {
+/* Un seul bouton sombre par écran, désigné par sa classe : depuis que
+   l'historique a rejoint la rangée, la position ne suffit plus à le
+   distinguer. */
+.cat-actions > button.is-commit {
   background: var(--ui-ink);
   border-color: var(--ui-ink);
   color: #fff;
 }
-.cat-actions > button:hover {
+.cat-actions > button.is-commit:hover {
   background: #000;
   border-color: #000;
+}
+.cat-actions > button:not(.is-commit):hover {
+  background: var(--ui-field);
 }
 .cat-actions .file-button:hover {
   background: var(--ui-field);
@@ -3528,13 +3534,13 @@ dialog h2 {
    `<dialog>` + `showModal()` apportent le fond, le piège à focus et Échap sans
    une ligne de script.
    --------------------------------------------------------------------------- */
-/* La popup tombe sous son bouton, alignée à droite comme lui. L'en-tête est
-   collante et haute de 71 px : la position est donc connue d'avance, ce qui
-   évite de calculer un ancrage à chaque ouverture. */
+/* La popup tombe sous son bouton, alignée à droite comme lui. Les deux valeurs
+   sont lues à l'ouverture et posées en variables ; les replis servent si la
+   mesure échoue. */
 .sheet {
   position: fixed;
-  inset: auto 22px auto auto;
-  top: 78px;
+  inset: auto var(--sheet-right, 32px) auto auto;
+  top: var(--sheet-top, 78px);
   width: min(460px, calc(100vw - 32px));
   max-height: min(560px, calc(100vh - 110px));
   margin: 0;
@@ -3565,7 +3571,6 @@ dialog h2 {
 @media (max-width: 740px) {
   .sheet {
     inset: auto 16px auto 16px;
-    top: 64px;
     width: auto;
   }
 }
@@ -3909,12 +3914,12 @@ dialog h2 {
 
 /* Bouton Commit : la marque GitHub est un aplat, elle prend donc la couleur du
    texte du bouton plutôt qu'un tracé. Blanche sur le bouton sombre. */
-.cat-actions > button {
+.cat-actions > button.is-commit {
   display: inline-flex;
   align-items: center;
   gap: 7px;
 }
-.cat-actions > button svg {
+.cat-actions > button.is-commit svg {
   flex: none;
   fill: currentColor;
 }
@@ -3935,4 +3940,20 @@ dialog h2 {
     padding-left: 16px;
     padding-right: 16px;
   }
+}
+
+/* L'import a rejoint l'en-tête : il prend le gabarit de la pastille d'état et
+   du reste des contrôles qui s'y trouvent. */
+.header-status .file-button {
+  height: var(--ui-control);
+  padding: 0 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ui-ink);
+}
+.header-status .file-button:hover {
+  background: var(--ui-field);
 }

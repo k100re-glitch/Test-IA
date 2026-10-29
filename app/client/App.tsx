@@ -86,6 +86,7 @@ export default function App() {
   const [componentOpen, setComponentOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const historyPopup = useRef<HTMLDivElement>(null);
+  const historyButton = useRef<HTMLButtonElement>(null);
   const cancelButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     bootstrap()
@@ -106,8 +107,28 @@ export default function App() {
     const node = historyPopup.current;
     if (!node) return;
     const shown = node.matches(':popover-open');
-    if (historyOpen && !shown) node.showPopover();
-    else if (!historyOpen && shown) node.hidePopover();
+    if (historyOpen && !shown) {
+      // La popup se place sous son bouton, lu juste avant l'ouverture : il a
+      // changé de rangée une fois, et une position écrite en dur dans la
+      // feuille de style redeviendrait fausse à la prochaine.
+      const anchor = historyButton.current?.getBoundingClientRect();
+      if (anchor) {
+        node.style.setProperty('--sheet-top', `${Math.round(anchor.bottom + 8)}px`);
+        node.style.setProperty(
+          '--sheet-right',
+          `${Math.round(innerWidth - anchor.right)}px`,
+        );
+      }
+      node.showPopover();
+    } else if (!historyOpen && shown) node.hidePopover();
+  }, [historyOpen]);
+  // Elle est posée dans le calque supérieur, donc fixée au viewport : si la
+  // page défile, elle se décroche de son bouton. Autant la fermer.
+  useEffect(() => {
+    if (!historyOpen) return;
+    const close = () => setHistoryOpen(false);
+    addEventListener('scroll', close, { passive: true });
+    return () => removeEventListener('scroll', close);
   }, [historyOpen]);
   const clearError = () => {
     setError('');
@@ -165,12 +186,31 @@ export default function App() {
             <i aria-hidden="true" />
             Local · V2
           </span>
-          <button
-            onClick={() => setHistoryOpen(!historyOpen)}
-            aria-expanded={historyOpen}
-          >
-            Historique · {state.revision}
-          </button>
+          <label className="file-button">
+            Importer un JSON
+            <input
+              type="file"
+              accept=".json,application/json"
+              onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = '';
+              if (file)
+                void perform(async () => {
+                  if (file.size > 128000)
+                    throw new Error(
+                      'Fichier trop volumineux (128 Ko maximum).',
+                    );
+                  const tokens = JSON.parse(await file.text());
+                  setProposal(
+                    await request('import', {
+                      revision: state.revision,
+                      tokens,
+                    }),
+                  );
+                });
+            }}
+          />
+          </label>
         </div>
       </header>
       <div className="feedback" aria-live="polite">
@@ -272,6 +312,7 @@ export default function App() {
             workspace et les valide. Rien n'est poussé : publier est une autre
             décision, qui se prend ailleurs. */}
         <button
+          className="is-commit"
           onClick={() =>
             void perform(async () => {
               const result = await gitCommit();
@@ -284,31 +325,14 @@ export default function App() {
           </svg>
           Commit
         </button>
-        <label className="file-button">
-          Importer un JSON
-          <input
-            type="file"
-            accept=".json,application/json"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = '';
-              if (file)
-                void perform(async () => {
-                  if (file.size > 128000)
-                    throw new Error(
-                      'Fichier trop volumineux (128 Ko maximum).',
-                    );
-                  const tokens = JSON.parse(await file.text());
-                  setProposal(
-                    await request('import', {
-                      revision: state.revision,
-                      tokens,
-                    }),
-                  );
-                });
-            }}
-          />
-        </label>
+        <button
+          type="button"
+          ref={historyButton}
+          onClick={() => setHistoryOpen(!historyOpen)}
+          aria-expanded={historyOpen}
+        >
+          Historique · {state.revision}
+        </button>
       </div>
         }
         tokens={state.tokens}

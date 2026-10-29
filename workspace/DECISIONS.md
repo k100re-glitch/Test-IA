@@ -491,3 +491,12 @@ commencent toutes deux à 242 px.
 démarrage reste, c'est lui qui pose le jeton de session. L'ombre interne des
 scènes d'aperçu est retirée : l'encadré se suffit de sa teinte et de son
 filet.
+
+**Importer et Historique échangent de place.** L'import rejoint l'en-tête
+auprès de la pastille d'état ; l'historique descend auprès de Commit, les deux
+touchant au dépôt et aux révisions. Deux conséquences qu'il a fallu traiter :
+le bouton sombre est désormais désigné par une classe et non par sa position,
+puisqu'il n'est plus seul dans sa rangée ; et la popup, qui tombait sous une
+position écrite en dur dans la feuille de style, lit maintenant le rectangle
+de son bouton à l'ouverture. Posée dans le calque supérieur, elle est fixée au
+viewport : elle se ferme donc au défilement plutôt que de se décrocher.
