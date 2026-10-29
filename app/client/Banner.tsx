@@ -1,5 +1,9 @@
 import { useEffect, useRef } from 'react';
-import logo from './brand/logo.png';
+// Les deux marques ne sont pas interchangeables et ne partagent donc pas de
+// fichier : la tuile bleue est l'icône de l'application, assez grande ici pour
+// être lue comme telle ; le glyphe monochrome tient l'en-tête, où 30 px ne
+// laisseraient rien voir d'un dégradé.
+import appIcon from './brand/app-icon.png';
 import background from './brand/banner-bg.jpg';
 
 // Bannière d'accueil : le fond en dégradé et, posé dessus, le verrou de marque
@@ -61,7 +65,7 @@ export default function Banner() {
         aria-hidden="true"
       />
       <p className="banner-lockup">
-        <img src={logo} alt="" aria-hidden="true" />
+        <img src={appIcon} alt="" aria-hidden="true" />
         <strong>
           Inbox
           <br />

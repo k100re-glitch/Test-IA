@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Scenario } from './DesignSystem.js';
 import CanvasBoard from './CanvasBoard.js';
-import logo from './brand/logo.png';
+import glyph from './brand/glyph.png';
 import Banner from './Banner.js';
 import TokensTab from './TokensTab.js';
 import {
@@ -99,6 +99,15 @@ export default function App() {
       cancelButton.current?.focus();
     } else dialog.current?.close();
   }, [proposal]);
+  // Un message posé dans le flux partait en défilant ; flottant, il resterait
+  // là indéfiniment. Les confirmations s'effacent donc d'elles-mêmes au bout
+  // de cinq secondes. Les erreurs, non : elles disent qu'une action n'a pas
+  // eu lieu, et c'est à la suivante de les remplacer.
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(''), 5000);
+    return () => clearTimeout(timer);
+  }, [notice]);
   // L'historique s'ouvre en popup accrochée à son bouton. L'API popover fait
   // le reste : calque supérieur, fermeture par Échap et au clic en dehors,
   // sans fond assombri — c'est une pastille d'information, pas une décision à
@@ -175,42 +184,45 @@ export default function App() {
       </a>
       <header className="studio-header">
         <div className="wordmark">
-          <img className="brand-logo" src={logo} alt="" width={34} height={34} />
+          <img className="brand-logo" src={glyph} alt="" width={30} height={30} />
           <div>
             <strong>Inbox Zapper</strong>
             <span>Design System</span>
           </div>
         </div>
         <div className="header-status">
-          <span className="local-badge">
-            <i aria-hidden="true" />
-            Local · V2
-          </span>
-          <label className="file-button">
-            Importer un JSON
-            <input
-              type="file"
-              accept=".json,application/json"
-              onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = '';
-              if (file)
-                void perform(async () => {
-                  if (file.size > 128000)
-                    throw new Error(
-                      'Fichier trop volumineux (128 Ko maximum).',
-                    );
-                  const tokens = JSON.parse(await file.text());
-                  setProposal(
-                    await request('import', {
-                      revision: state.revision,
-                      tokens,
-                    }),
-                  );
-                });
-            }}
-          />
-          </label>
+          {/* Commiter écrit les tokens courants dans le fichier versionnable du
+              workspace et les valide. Rien n'est poussé : publier est une autre
+              décision, qui se prend ailleurs. */}
+          <button
+            className="is-commit"
+            onClick={() =>
+              void perform(async () => {
+                const result = await gitCommit();
+                setNotice(result.message);
+              })
+            }
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8" />
+            </svg>
+            Commit
+          </button>
+          <button
+            type="button"
+            className="is-history"
+            ref={historyButton}
+            onClick={() => setHistoryOpen(!historyOpen)}
+            aria-expanded={historyOpen}
+          >
+            {/* La même horloge que dans l'en-tête de la popup : le bouton et ce
+                qu'il ouvre portent le même signe. */}
+            <svg width="15" height="15" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M10 5.4V10l3 1.8" />
+              <circle cx="10" cy="10" r="7.2" />
+            </svg>
+            Historique · {state.revision}
+          </button>
         </div>
       </header>
       <div className="feedback" aria-live="polite">
@@ -306,35 +318,6 @@ export default function App() {
       {!componentOpen && <Banner />}
       <CanvasBoard
         onOpenChange={(id) => setComponentOpen(!!id)}
-        actions={
-      <div className="cat-actions">
-        {/* Commiter écrit les tokens courants dans le fichier versionnable du
-            workspace et les valide. Rien n'est poussé : publier est une autre
-            décision, qui se prend ailleurs. */}
-        <button
-          className="is-commit"
-          onClick={() =>
-            void perform(async () => {
-              const result = await gitCommit();
-              setNotice(result.message);
-            })
-          }
-        >
-          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8" />
-          </svg>
-          Commit
-        </button>
-        <button
-          type="button"
-          ref={historyButton}
-          onClick={() => setHistoryOpen(!historyOpen)}
-          aria-expanded={historyOpen}
-        >
-          Historique · {state.revision}
-        </button>
-      </div>
-        }
         tokens={state.tokens}
         tokensView={<TokensTab tokens={state.tokens} />}
       />

@@ -500,3 +500,104 @@ puisqu'il n'est plus seul dans sa rangée ; et la popup, qui tombait sous une
 position écrite en dur dans la feuille de style, lit maintenant le rectangle
 de son bouton à l'ouverture. Posée dans le calque supérieur, elle est fixée au
 viewport : elle se ferme donc au défilement plutôt que de se décrocher.
+
+**Nouveau fond de bannière.** Dégradé à nuages, 47 Ko. Comme le précédent, il
+portait le logo incrusté : la boîte qui le contenait (505-1015 x 318-410) a
+été refaite en interpolant verticalement entre la ligne au-dessus et celle en
+dessous. La boîte est cette fois resserrée autour du logo et non étendue à
+toute la largeur, pour ne pas étirer les nuages qui l'encadrent — le nuage
+gauche s'arrête avant x=505, le droit commence après x=1015. Vérifié : plus
+aucun pixel sombre dans l'image.
+
+Le bandeau fait 320 px pour une image au rapport 2:1 : `object-fit: cover`
+n'en montre donc qu'une bande centrale et les nuages apparaissent coupés par
+le bas. C'est voulu — ils bordent la composition plutôt qu'ils ne la
+remplissent. Les montrer entiers demanderait un bandeau deux fois plus haut.
+
+**Icône sur Historique.** La même horloge que l'en-tête de sa popup : le
+bouton et ce qu'il ouvre portent le même signe. L'alignement et l'écart sont
+remontés au niveau de la rangée, les deux boutons les partageant ; seul le
+tracé diffère, aplat pour la marque GitHub, trait pour l'horloge.
+
+**Deux marques, deux fichiers.** L'icône de l'application (242 x 242, 48 Ko)
+est dans `app-icon.png` et tient le verrou de la bannière, où ses 52 px la
+laissent se lire comme une icône. Le glyphe monochrome est dans `glyph.png` et
+tient l'en-tête, où 30 px ne laisseraient rien voir d'un dégradé.
+
+Les deux puisaient d'abord dans le même fichier, si bien que remplacer la
+marque d'un endroit changeait l'autre. Les fichiers sont nommés d'après ce
+qu'ils contiennent et non d'après l'endroit où ils servent : c'est ce qui
+permet de les échanger sans rien renommer. Ses coins arrondis sont dessinés dans l'image, avec de
+la transparence autour : aucun rayon n'est posé en CSS, qui rognerait le
+dessin une seconde fois. La largeur déclarée dans le balisage est ramenée de
+34 à 30 px pour correspondre à la feuille de style — elles divergeaient depuis
+la réduction du logo précédent, et le navigateur réservait donc une place
+légèrement fausse avant le chargement. Le favicon porte toujours l'ancienne
+marque.
+**Plus de filet entre la bannière et le catalogue.** Le passage du dégradé au
+blanc suffit à les séparer ; un trait par-dessus se voyait plus que la limite
+qu'il était censé marquer. C'est le même raisonnement que sous l'en-tête.
+
+**Les messages passent en bandeau flottant.** Posés dans le flux sous
+l'en-tête, ils n'étaient visibles qu'en haut de page : commiter après avoir
+déroulé le catalogue ne montrait rien. Ils flottent désormais au-dessus de
+tout, centrés, à la largeur de leur texte, sur un fond translucide et flouté.
+Le conteneur laisse passer les clics et seul le message les reçoit — sans
+cela, une bande fixe et vide couvrirait l'en-tête en permanence.
+
+Conséquence à traiter : un message qui ne défile plus ne s'en va plus. Les
+confirmations s'effacent donc d'elles-mêmes au bout de cinq secondes. Les
+erreurs, non : elles disent qu'une action n'a pas eu lieu, et c'est à la
+suivante de les remplacer. Mesuré : présent à une seconde, parti à six.
+
+**Les deux groupes échangent de rangée.** Commit et Historique montent dans
+l'en-tête ; la pastille d'état et l'import descendent dans la rangée du
+catalogue.
+
+Ce déplacement a imposé une reprise de fond : les contrôles étaient stylés par
+leur conteneur (`.cat-actions > button`, `.header-status .file-button`), si
+bien que chaque échange demandait de réécrire les règles. Ils sont désormais
+définis par ce qu'ils sont — les deux rangées nommées ensemble, l'allure
+portée par la classe du contrôle. Le prochain déplacement ne coûtera plus
+rien.
+
+L'ancrage de la popup, lui, n'a rien demandé : il lit le rectangle de son
+bouton à l'ouverture. Vérifié après l'échange — 8 px sous le bouton, bords
+droits alignés au pixel.
+
+**La rangée du catalogue est retirée.** La pastille « Local · V2 » et le bouton
+« Importer un JSON » disparaissent ; la ligne du fil d'Ariane n'a plus de
+partie droite. Le `cat-actions` n'est plus passé du tout, plutôt que de laisser
+un conteneur vide : la fente reste disponible dans `CanvasBoard` pour un usage
+futur.
+
+**Perte assumée.** L'import était le seul chemin de l'interface pour charger un
+autre design system — il ne reste que l'annulation sélective depuis
+l'historique, et l'édition du fichier de tokens sur disque. La route
+`/api/import` est intacte : seul son déclencheur a disparu de l'écran.
+
+## Colonne étroite, larges marges
+
+La largeur de la page tient maintenant dans deux variables, `--shell-max` et
+`--shell-gutter`. Contenu, en-tête et pied les lisent toutes les deux, donc
+changer d'avis coûte une ligne. Le réglage retenu est 1180 / 56, soit 360 px de
+marge de chaque côté sur un écran de 1900.
+
+Ce qu'il faut savoir avant de trancher : la colonne porte la grille des cartes,
+qui se remplit par pas de 334 px. Chaque réduction peut donc lui retirer une
+colonne. Relevé à 1900 px de large :
+
+| `--shell-max` | colonnes de cartes | marges |
+| --- | --- | --- |
+| 1180 | 2 | 360 px |
+| 1280 | 2 | 310 px |
+| 1360 | 3 | 270 px |
+| 1480 | 3 | 210 px |
+
+1360 aurait été le point d'équilibre — la dernière valeur qui garde trois
+cartes par rangée. L'air a été préféré à la densité : deux cartes par rangée
+sont assumées.
+
+À noter, la référence Instagram n'avait pas cet arbitrage : son fil est une
+colonne unique, que rétrécir ne coûte jamais en densité. Ici, la page porte une
+grille.

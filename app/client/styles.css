@@ -2759,9 +2759,13 @@ body {
   padding: 15px 22px;
   border-bottom: 1px solid var(--ui-line);
 }
+/* La marque est une tuile carrée dont les coins arrondis sont dessinés dans
+   l'image, avec de la transparence autour : aucun rayon à poser en CSS, qui
+   rognerait le dessin une seconde fois. */
 .brand-logo {
   width: 30px;
   height: 30px;
+  border-radius: 0;
 }
 .wordmark {
   gap: 10px;
@@ -3167,11 +3171,14 @@ dialog h2 {
   background: #fff;
   --cat-stage: #fff;
 }
+/* Aucun filet entre la bannière et le catalogue : le passage du dégradé au
+   blanc suffit à les séparer, et un trait par-dessus se verrait plus que la
+   limite qu'il est censé marquer. */
 .cat,
 .cat.is-flush {
   margin-top: 0;
   border-radius: 0;
-  border-top: 1px solid var(--cat-line);
+  border-top: 0;
 }
 .cat-crumb-row,
 .cat.is-flush .cat-crumb-row {
@@ -3914,14 +3921,27 @@ dialog h2 {
 
 /* Bouton Commit : la marque GitHub est un aplat, elle prend donc la couleur du
    texte du bouton plutôt qu'un tracé. Blanche sur le bouton sombre. */
-.cat-actions > button.is-commit {
+/* Les deux boutons de la rangée portent une marque : alignement et écart sont
+   communs, seul le tracé diffère — la marque GitHub est un aplat, l'horloge
+   un trait. */
+.cat-actions > button {
   display: inline-flex;
   align-items: center;
   gap: 7px;
 }
-.cat-actions > button.is-commit svg {
+.cat-actions > button svg {
   flex: none;
+}
+.cat-actions > button.is-commit svg {
   fill: currentColor;
+}
+.cat-actions > button.is-history svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
 }
 
 /* L'en-tête et le pied s'alignent sur la colonne de contenu. Leur fond doit
@@ -3956,4 +3976,190 @@ dialog h2 {
 }
 .header-status .file-button:hover {
   background: var(--ui-field);
+}
+
+/* ---------------------------------------------------------------------------
+   Les messages passent en bandeau flottant.
+
+   Posés dans le flux sous l'en-tête, ils n'étaient visibles qu'en haut de
+   page : commiter après avoir déroulé le catalogue ne montrait rien. Ils
+   flottent désormais au-dessus de tout, au centre et à la largeur de leur
+   texte.
+
+   Le conteneur laisse passer les clics ; seul le message les reçoit. Sans
+   cela, une bande fixe et vide couvrirait l'en-tête en permanence.
+   --------------------------------------------------------------------------- */
+.feedback {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  width: max-content;
+  max-width: min(560px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.feedback p {
+  pointer-events: auto;
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  box-shadow:
+    0 0 0 1px rgb(16 18 27 / 5%),
+    0 2px 6px rgb(16 18 27 / 5%),
+    0 14px 32px rgb(16 18 27 / 12%);
+}
+/* Les fonds restent translucides, sans quoi il n'y aurait rien à flouter. */
+.feedback .notice {
+  background: rgb(233 246 238 / 78%);
+  color: #1d5438;
+}
+.feedback .error {
+  background: rgb(255 238 242 / 82%);
+  color: #94132c;
+}
+
+/* ---------------------------------------------------------------------------
+   Les contrôles sont définis par ce qu'ils sont, non par la rangée qui les
+   porte.
+
+   Les deux groupes viennent d'échanger de place ; les styler par leur
+   conteneur demandait de tout réécrire à chaque déplacement. Les deux rangées
+   sont donc nommées ensemble, et chaque contrôle garde son allure où qu'il
+   aille.
+   --------------------------------------------------------------------------- */
+.header-status,
+.cat-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-status > button,
+.header-status > .file-button,
+.header-status > .local-badge,
+.cat-actions > button,
+.cat-actions > .file-button,
+.cat-actions > .local-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: var(--ui-control);
+  padding: 0 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ui-ink);
+  white-space: nowrap;
+}
+.header-status > button:hover,
+.header-status > .file-button:hover,
+.cat-actions > button:hover,
+.cat-actions > .file-button:hover {
+  background: var(--ui-field);
+}
+/* Un seul bouton sombre par écran. */
+.header-status > button.is-commit,
+.cat-actions > button.is-commit {
+  background: var(--ui-ink);
+  border-color: var(--ui-ink);
+  color: #fff;
+}
+.header-status > button.is-commit:hover,
+.cat-actions > button.is-commit:hover {
+  background: #000;
+  border-color: #000;
+}
+/* La marque GitHub est un aplat, l'horloge un trait. */
+.header-status > button.is-commit svg,
+.cat-actions > button.is-commit svg {
+  flex: none;
+  fill: currentColor;
+}
+.header-status > button.is-history svg,
+.cat-actions > button.is-history svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
+}
+/* La pastille d'état n'est pas un bouton : pas de curseur, et sa couleur est
+   portée par le seul point. */
+.header-status > .local-badge,
+.cat-actions > .local-badge {
+  cursor: default;
+}
+.local-badge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22a45d;
+  flex: none;
+}
+@media (max-width: 740px) {
+  .header-status > button,
+  .header-status > .file-button,
+  .header-status > .local-badge,
+  .cat-actions > button,
+  .cat-actions > .file-button,
+  .cat-actions > .local-badge {
+    height: 30px;
+    padding: 0 9px;
+    font-size: 11.5px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Largeur de la page, en deux nombres.
+
+   Essai : une colonne nettement plus étroite, beaucoup d'air de chaque côté.
+   Tout ce qui s'aligne sur cette colonne — contenu, en-tête, pied — lit les
+   deux mêmes variables, de sorte que changer d'avis coûte une ligne.
+
+   Conséquence à connaître avant de trancher : la colonne porte la grille des
+   cartes, qui se remplit par pas de ~334 px. Chaque réduction peut donc lui
+   retirer une colonne de cartes.
+   --------------------------------------------------------------------------- */
+:root {
+  --shell-max: 1180px;
+  --shell-gutter: 56px;
+}
+.cat-layout {
+  max-width: var(--shell-max);
+  padding-left: var(--shell-gutter);
+  padding-right: var(--shell-gutter);
+}
+.cat-crumb-row,
+.cat-tabs-row {
+  max-width: var(--shell-max);
+  padding-left: var(--shell-gutter);
+  padding-right: var(--shell-gutter);
+}
+.studio-header,
+.studio-footer {
+  padding-left: max(
+    var(--shell-gutter),
+    calc((100% - var(--shell-max)) / 2 + var(--shell-gutter))
+  );
+  padding-right: max(
+    var(--shell-gutter),
+    calc((100% - var(--shell-max)) / 2 + var(--shell-gutter))
+  );
+}
+@media (max-width: 740px) {
+  :root {
+    --shell-gutter: 16px;
+  }
 }
