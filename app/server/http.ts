@@ -7,6 +7,7 @@ import { proposeSchema } from '../shared/model.js';
 import { Store, StudioError } from './store.js';
 import { ProjectStore } from './project.js';
 import { Catalogue } from './catalogue.js';
+import { commitTokens } from './git.js';
 import { projectSchema } from '../shared/project.js';
 import { CodexAdapter } from '../../connectors/agents/codex.js';
 import { unvalidatedAdapter } from '../../connectors/agents/unvalidated.js';
@@ -184,6 +185,17 @@ export async function createStudioServer(options: {
             .strict()
             .parse(body);
           return send(200, store.proposeUndo(b.revision, b.id));
+        }
+        // Écrit les tokens courants dans le fichier versionnable du workspace
+        // et les commite. Aucun paramètre : la révision et les valeurs
+        // viennent de l'état du serveur, pas de la requête.
+        if (url.pathname === '/api/git-commit') {
+          z.object({}).strict().parse(body);
+          const snapshot = store.snapshot();
+          return send(
+            200,
+            await commitTokens(root, snapshot.revision, snapshot.tokens),
+          );
         }
         if (url.pathname === '/api/commit') {
           const b = z.object({ id: z.string().uuid() }).strict().parse(body);

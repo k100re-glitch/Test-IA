@@ -50,6 +50,13 @@ export async function bootstrap() {
 export const getState = () => request<State>('state');
 export const commit = (proposal: Proposal) =>
   request<State>('commit', { id: proposal.id });
+// Écrit les tokens dans le fichier versionnable du dépôt et les commite. Le
+// serveur ne prend aucun paramètre : il lit sa propre révision.
+export const gitCommit = () =>
+  request<{ committed: boolean; sha?: string; message: string }>(
+    'git-commit',
+    {},
+  );
 export async function exportTokens() {
   const tokens = await request<Tokens>('export');
   downloadText(
