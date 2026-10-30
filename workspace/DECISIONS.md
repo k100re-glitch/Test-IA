@@ -880,3 +880,42 @@ d'acquérir. Mesuré : panneau 306 × 569 après génération, vidéo toujours
 **Le dégradé comble le reste.** Ses trois teintes sont relevées au pixel sur
 les bords de la vidéo (#e1f0fe en haut, #a0cdfe au milieu, #69b2fe en bas) :
 la bande qui apparaît au-dessus et au-dessous ne se distingue pas d'elle.
+
+## Ajouter un composant depuis Figma : la démonstration, et ce qu'elle ne fait pas
+
+**Demandé.** Un bouton « + » en bas à droite, un lien Figma collé, et le
+composant arrive dans le catalogue. Demandé aussi, explicitement : simuler
+l'intelligence qui écrirait le composant, la clé API venant plus tard.
+
+**Ce qui est réel.** Le lien est analysé pour de bon : `app/client/figmaLink.ts`
+en tire la clé de fichier et l'identifiant du nœud, refuse un lien de fichier
+sans nœud, un hôte qui n'est pas figma.com, un identifiant illisible. Quatre
+tests le couvrent. La carte créée existe, s'ouvre, et vit dans la session de
+l'onglet.
+
+**Ce qui est joué.** Les quatre étapes — lecture du nœud, relevé des
+variables, écriture sur les tokens, ajout au catalogue — sont des minuteries.
+Aucune requête ne part vers Figma, aucun fichier du design system n'est
+touché. C'est écrit dans la fiche elle-même, en toutes lettres, et la carte
+porte l'accroche « Simulé » avec un aperçu en pointillés : à aucun moment
+l'atelier ne laisse croire qu'un composant a été écrit. `docs/FIGMA.md` reste
+vrai — aucune connexion Figma n'est ouverte.
+
+**Pourquoi un formulaire plutôt qu'un seul champ.** Le nom et la famille sont
+demandés parce qu'ils ne peuvent pas être lus : sans Figma, un nom inventé
+aurait l'air d'avoir été relevé. Le champ dit « lu depuis Figma plus tard », et
+à défaut le nom se déduit du nœud (`node-412-1908`).
+
+**Ce qui manquera le jour de la vraie intégration**, et qui n'est pas un
+détail : un client Figma autorisé avec l'OAuth de l'étudiant, puis un agent
+capable d'écrire l'atome dans `app/client/Atoms.tsx` sur les tokens du design
+system. Le second est le vrai travail — c'est ce qui a été fait à la main pour
+les dix composants existants.
+
+**Les cartes simulées ne partent pas dans l'export .md.** Le générateur lit le
+catalogue réel ; une demande en attente n'y a pas sa place tant qu'aucun code
+n'existe. Vérifié : la fiche reste à 537 lignes.
+
+**Vérifié dans le site.** Lien collé, les quatre étapes s'enchaînent, message
+de confirmation, le catalogue passe de 10 à 11 composants, la carte affiche
+« Simulé » et le nœud 412:1908. 41 tests.

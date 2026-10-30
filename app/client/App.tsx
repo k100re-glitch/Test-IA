@@ -5,6 +5,15 @@ import glyph from './brand/glyph.png';
 import headerMotion from './brand/header-motion.mp4';
 import Banner from './Banner.js';
 import TokensTab from './TokensTab.js';
+import { fallbackName, parseFigmaLink } from './figmaLink.js';
+import {
+  FAMILIES,
+  STEPS,
+  loadDrafts,
+  saveDrafts,
+  type Draft,
+  type Family,
+} from './drafts.js';
 import {
   bootstrap,
   commit,
@@ -91,6 +100,17 @@ export default function App() {
   // c'est là qu'on attend la réponse.
   const [docDone, setDocDone] = useState('');
   const [docError, setDocError] = useState('');
+  // Demandes d'ajout venues d'un lien Figma. La page les tient, le catalogue
+  // les affiche. Voir app/client/drafts.ts : l'enchaînement est une mise en
+  // scène, rien n'est lu dans Figma et aucun composant n'est écrit.
+  const [drafts, setDrafts] = useState<Draft[]>(loadDrafts);
+  const [addOpen, setAddOpen] = useState(false);
+  const [link, setLink] = useState('');
+  const [draftName, setDraftName] = useState('');
+  const [family, setFamily] = useState<Family>('Actions');
+  const [step, setStep] = useState(-1);
+  const [addError, setAddError] = useState('');
+  const [added, setAdded] = useState('');
   // Les nombres annoncés par la fiche sont comptés sur le catalogue réel,
   // celui que l'atelier affiche. Une phrase écrite en dur vieillirait au
   // premier composant ajouté.
@@ -105,6 +125,7 @@ export default function App() {
   const [componentOpen, setComponentOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const historyPopup = useRef<HTMLDivElement>(null);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const historyButton = useRef<HTMLButtonElement>(null);
   const cancelButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -161,6 +182,54 @@ export default function App() {
     addEventListener('scroll', close, { passive: true });
     return () => removeEventListener('scroll', close);
   }, [historyOpen]);
+  useEffect(() => saveDrafts(drafts), [drafts]);
+  // Chaque étape attend la précédente. Les minuteries sont annulées si la
+  // fiche se ferme en cours de route : une démonstration interrompue ne doit
+  // pas ajouter une carte dans le dos de l'étudiant.
+  function runAdd() {
+    let target: ReturnType<typeof parseFigmaLink>;
+    try {
+      target = parseFigmaLink(link);
+    } catch (e) {
+      setAddError((e as Error).message);
+      return;
+    }
+    setAddError('');
+    setAdded('');
+    const name = draftName.trim() || fallbackName(target);
+    let index = 0;
+    const next = () => {
+      setStep(index);
+      const current = STEPS[index];
+      timers.current.push(
+        setTimeout(() => {
+          index += 1;
+          if (index < STEPS.length) return next();
+          setStep(-1);
+          setDrafts((list) => [
+            ...list,
+            {
+              id: crypto.randomUUID(),
+              name,
+              family,
+              fileKey: target.fileKey,
+              nodeId: target.nodeId,
+              addedAt: new Date().toISOString(),
+            },
+          ]);
+          setAdded(name);
+          setLink('');
+          setDraftName('');
+        }, current.ms),
+      );
+    };
+    next();
+  }
+  function stopAdd() {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+    setStep(-1);
+  }
   const clearError = () => {
     setError('');
     setNotice('');
@@ -370,7 +439,7 @@ export default function App() {
           Les trois nombres sont comptés sur place — ils doivent suivre le
           design system, pas une phrase écrite une fois. */}
       <div
-        className="sheet is-doc-sheet"
+        className="sheet is-modal is-doc-sheet"
         id="doc-sheet"
         popover="auto"
         onToggle={(e) => setDocOpen(e.newState === 'open')}
@@ -510,9 +579,163 @@ export default function App() {
       {!componentOpen && <Banner />}
       <CanvasBoard
         onOpenChange={(id) => setComponentOpen(!!id)}
+        drafts={drafts}
         tokens={state.tokens}
         tokensView={<TokensTab tokens={state.tokens} />}
       />
+      {/* Ajouter un composant depuis Figma. Le bouton flotte en bas à droite :
+          l'ajout est une action de l'atelier entier, pas d'une page, et il
+          reste sous la main quelle que soit la hauteur du catalogue. */}
+      <button
+        type="button"
+        className="fab"
+        popoverTarget="add-sheet"
+        aria-label="Ajouter un composant depuis Figma"
+        title="Ajouter un composant depuis Figma"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 6v12M6 12h12" />
+        </svg>
+      </button>
+      <div
+        className="sheet is-modal is-add-sheet"
+        id="add-sheet"
+        popover="auto"
+        onToggle={(e) => {
+          setAddOpen(e.newState === 'open');
+          if (e.newState === 'closed') {
+            stopAdd();
+            setAddError('');
+            setAdded('');
+          }
+        }}
+        aria-labelledby="add-title"
+      >
+        <header className="sheet-head">
+          <span className="sheet-crumb">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 6v12M6 12h12" />
+            </svg>
+            Design System
+            <i aria-hidden="true">/</i>
+            <strong id="add-title">Ajouter un composant</strong>
+          </span>
+          <button
+            type="button"
+            className="sheet-close"
+            popoverTarget="add-sheet"
+            popoverTargetAction="hide"
+            aria-label="Fermer"
+          >
+            <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m5.4 5.4 9.2 9.2M14.6 5.4l-9.2 9.2" />
+            </svg>
+          </button>
+        </header>
+        <div className="sheet-body">
+          <p className="sheet-lead">
+            Collez le lien Figma d’un composant : il est lu, écrit sur vos
+            tokens, puis ajouté au catalogue.
+          </p>
+          {/* Dit sans détour ce qui est joué et ce qui ne l'est pas. Une
+              démonstration qui se fait passer pour une intégration ne
+              démontre rien. */}
+          <p className="add-warn">
+            <strong>Démonstration.</strong> Tant qu’aucune clé API n’est
+            fournie, rien n’est lu dans Figma et aucun composant n’est écrit :
+            l’enchaînement ci-dessous montre les étapes, et la carte créée est
+            marquée « Simulé ».
+          </p>
+          <label className="add-field">
+            <span>Lien du composant</span>
+            <input
+              type="url"
+              value={link}
+              placeholder="https://www.figma.com/design/…?node-id=412-1908"
+              onChange={(e) => {
+                setLink(e.target.value);
+                setAddError('');
+              }}
+              disabled={step >= 0}
+            />
+          </label>
+          <div className="add-row">
+            <label className="add-field">
+              <span>Nom (lu depuis Figma plus tard)</span>
+              <input
+                type="text"
+                value={draftName}
+                placeholder="déduit du nœud"
+                onChange={(e) => setDraftName(e.target.value)}
+                disabled={step >= 0}
+              />
+            </label>
+            <label className="add-field">
+              <span>Famille</span>
+              <select
+                value={family}
+                onChange={(e) => setFamily(e.target.value as Family)}
+                disabled={step >= 0}
+              >
+                {FAMILIES.map((f) => (
+                  <option key={f}>{f}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {step >= 0 && (
+            <ol className="add-steps" aria-live="polite">
+              {STEPS.map((s, i) => (
+                <li
+                  key={s.label}
+                  className={
+                    i < step ? 'is-done' : i === step ? 'is-now' : undefined
+                  }
+                >
+                  <i aria-hidden="true" />
+                  {s.label}
+                </li>
+              ))}
+            </ol>
+          )}
+          {addError && (
+            <p className="doc-bad" role="alert">
+              {addError}
+            </p>
+          )}
+          {added && (
+            <p className="doc-ok" role="status">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path d="m5.6 10.4 3 3 5.8-6.8" />
+              </svg>
+              {added} ajouté au catalogue, marqué « Simulé ».
+            </p>
+          )}
+        </div>
+        <footer className="sheet-foot">
+          <button
+            type="button"
+            className="is-ghost"
+            popoverTarget="add-sheet"
+            popoverTargetAction="hide"
+          >
+            Fermer
+          </button>
+          <button
+            type="button"
+            className="is-cta"
+            disabled={step >= 0}
+            onClick={runAdd}
+          >
+            {step >= 0 ? 'Intégration…' : 'Ajouter au design system'}
+          </button>
+        </footer>
+      </div>
       <footer className="studio-footer">
         <span>DS-Studio V2 · Fait pour être transformé.</span>
         <span>JSON local → validation → composants partagés</span>

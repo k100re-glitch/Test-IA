@@ -3,6 +3,7 @@ import { tokenCss, tokenKeys, type Tokens } from '../shared/model.js';
 import CopyButton from './CopyButton.js';
 import MockupFrame, { mockups } from './Mockups.js';
 import { sectionId, tokenSections } from './TokensTab.js';
+import type { Draft } from './drafts.js';
 import {
   Button,
   Checkbox,
@@ -85,6 +86,31 @@ export interface Entry {
   preview: ReactNode;
   variants: Variant[];
   situations: Situation[];
+}
+
+// Une demande venue d'un lien Figma prend la forme d'une entrée du catalogue,
+// mais ne prétend pas en être une : son aperçu est un emplacement vide, son
+// accroche dit « simulé », et sa fiche donne les coordonnées du nœud plutôt
+// qu'un code qui n'existe pas.
+function draftEntry(draft: Draft): Entry {
+  const place = (
+    <span className="prev-draft">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 7.5v9M7.5 12h9" />
+      </svg>
+      {draft.name}
+    </span>
+  );
+  return {
+    id: `draft:${draft.id}`,
+    family: draft.family,
+    name: draft.name,
+    eyebrow: 'Simulé',
+    description: `Nœud ${draft.nodeId} du fichier ${draft.fileKey}. Le code sera écrit lors de l'intégration réelle.`,
+    preview: place,
+    variants: [{ label: 'en attente d’intégration', node: place }],
+    situations: [],
+  };
 }
 
 export function useCatalogue(): Entry[] {
@@ -614,12 +640,16 @@ export default function CanvasBoard({
   picker,
   tokensView,
   actions,
+  drafts,
   onOpenChange,
 }: {
   tokens: Tokens;
   picker?: ReactNode;
   tokensView?: ReactNode;
   actions?: ReactNode;
+  // Demandes d'ajout en attente. Elles viennent de la page, qui les tient :
+  // le catalogue les affiche, il ne les garde pas.
+  drafts?: Draft[];
   // Prévient la page qu'une fiche est ouverte : c'est elle qui décide quoi
   // faire de son décor, le catalogue ne connaît pas ce qui l'entoure.
   onOpenChange?: (id?: string) => void;
@@ -645,7 +675,10 @@ export default function CanvasBoard({
     toTop();
     setTab(next);
   };
-  const entries = useCatalogue();
+  const catalogue = useCatalogue();
+  const entries = drafts?.length
+    ? [...catalogue, ...drafts.map(draftEntry)]
+    : catalogue;
   const current = entries.find((e) => e.id === open);
   const view = tab === 'tokens' ? 'tokens' : (current?.id ?? 'index');
   const style = tokenCss(tokens) as CSSProperties;
