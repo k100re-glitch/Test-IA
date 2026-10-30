@@ -601,3 +601,282 @@ sont assumées.
 À noter, la référence Instagram n'avait pas cet arbitrage : son fil est une
 colonne unique, que rétrécir ne coûte jamais en densité. Ici, la page porte une
 grille.
+
+**Changement de vue animé.** Ouvrir une fiche, revenir au catalogue ou passer
+aux tokens substituait le contenu d'un coup pendant que la page remontait en
+douceur : deux rythmes pour un seul geste. Le bloc de contenu porte maintenant
+une clé qui change avec la vue, si bien que React le remonte et que son
+animation d'arrivée — fondu et montée de 12 px sur 400 ms — se rejoue sans
+qu'on ait à piloter d'état. La durée est voisine de celle de la remontée de
+page : les deux se lisent comme un seul geste. La montée est passée de 8 à
+12 px en même temps que la durée de 260 à 400 — un trajet inchangé étalé sur
+plus longtemps se traîne au lieu de glisser.
+
+**Pas de `fill-mode`.** Un premier essai en `both` laissait le bloc figé sur
+son image de départ — donc invisible — partout où les animations sont
+suspendues, un onglet d'arrière-plan par exemple. Le défaut a été observé dans
+le panneau de test. Sans `fill-mode`, le bloc rend son état naturel tant que
+l'animation n'a pas démarré : un contenu non animé vaut mieux qu'un contenu
+qui ne s'affiche pas.
+
+## Deux défauts du défilement inertiel
+
+**La popup se fermait en arrivant au bout de sa liste.** Enchaînement :
+l'inertie reprenait la main dès que la liste n'avait plus de course, faisait
+glisser la page, et la popup — qui se ferme au défilement de la page —
+disparaissait. Elle refuse désormais les molettes venues d'une popup ouverte,
+même une fois la liste en bout : le confinement natif
+(`overscroll-behavior: contain`) suffit à arrêter là le mouvement. Mesuré :
+cinq impulsions supplémentaires une fois la liste au bout, la page reste à 0
+et la popup reste ouverte. Une molette en dehors la ferme toujours.
+
+**Le défilement inertiel se battait avec les déplacements programmés.** Une
+remontée demandée pendant qu'une inertie était en vol se faisait ramener à
+l'ancienne cible, et la page glissait toute seule. Le module retient désormais
+la dernière position qu'il a posée lui-même : si l'écart avec la position
+observée dépasse deux pixels, le déplacement vient d'ailleurs et fait
+autorité — l'animation est abandonnée. Mesuré : une impulsion de 900 px suivie
+d'un `scrollTo(0)` 80 ms plus tard laisse la page à 0, contre 900 auparavant.
+
+**Graisse du verrou de marque.** « Inbox Zapper » passe de 700 à 600. Le
+resserrement de l'interlettrage s'allège du même coup, de -0,03 à -0,022 em :
+une valeur taillée pour du gras referme trop un tracé plus fin.
+
+## Une fiche s'ouvrait en bas de page
+
+**Le mécanisme.** La remontée animée se faisait prendre de vitesse. Elle
+partait au clic, vers le haut d'une page qui n'existait déjà plus : le contenu
+était remplacé pendant le trajet, le document passait de 4426 à 1845 px, et le
+navigateur rabattait la position au nouveau bas de page. On atterrissait donc
+en bas, puis on remontait lentement — assez lentement pour que l'arrivée en
+bas soit ce qu'on voyait.
+
+**La correction.** La remontée se fait maintenant avant l'échange du contenu,
+et d'un seul coup, dans le même gestionnaire d'événement : le navigateur ne
+peint qu'une fois, en haut, avec le nouveau contenu. La douceur est portée par
+l'animation d'arrivée du bloc, qui ne dépend pas de la hauteur du document.
+Les onglets passent par le même chemin que le sommaire.
+
+**Mesuré.** Depuis une position à 2600 px : ouverture d'une fiche → 0 dès la
+première image ; retour au catalogue → 0 ; bascule vers les tokens → 0.
+L'animation `view-in` se rejoue bien à chaque fois, et le bloc revient au
+repos à l'opacité 1 sans transformation résiduelle.
+
+## Générateur de fiche Markdown du design system
+
+**Le besoin.** Travailler avec un assistant sur le DS supposait de lui
+redonner les valeurs à la main, donc de les lui donner parfois périmées.
+`npm run doc` écrit `workspace/DESIGN_SYSTEM.md` : tokens en vigueur et leur
+variable CSS, palette source du fichier Figma, composants avec variantes et
+JSX, copie des règles. Un seul fichier à joindre.
+
+**Une seule source par information.** Les tokens sont lus dans l'état courant
+de l'atelier, le seed ne servant que s'il n'y a pas encore d'état ; les règles
+sont recopiées depuis `workspace/DESIGN_RULES.md` à chaque génération ; le
+catalogue est lu dans les composants eux-mêmes. Ce dernier point coûte un
+détour : `useCatalogue` est un hook, ses métadonnées n'existent qu'au rendu.
+Un composant sonde le rappelle dans un rendu serveur jetable. L'autre voie
+était de tenir une liste de composants à côté de celle qui s'affiche — elle
+aurait menti au premier ajout.
+
+**Les imports d'images.** Les atomes importent des SVG et des PNG, que Vite
+transforme en URL et que Node refuse. `scripts/asset-stub.mjs` enregistre une
+chaîne de crochets qui renvoie un module vide pour ces extensions. Il couvre la
+résolution *et* le chargement : tsx résout parfois avant nous, et l'ordre
+d'appel des crochets dépend de l'ordre d'enregistrement. Conséquence assumée :
+le générateur ne peut pas être appelé depuis le serveur, qui tourne sans ces
+crochets — d'où une commande et non un bouton dans l'interface.
+
+**Pas d'horodatage.** Une date dans la sortie ferait un diff à chaque
+exécution, même sans changement, et noierait les vraies évolutions. La
+révision de l'atelier, elle, est écrite en tête.
+
+**Ce qui est dit et pas affirmé.** Les contrastes sont trois paires mesurées
+avec la fonction partagée, annoncées comme un sondage : survol, désactivé et
+erreur ne sont pas couverts. Une variante sans JSX déclaré est marquée « non
+déclaré dans la source » plutôt que complétée par approximation — aujourd'hui
+les 37 variantes en déclarent un. Un `state.json` illisible arrête la
+génération au lieu de se replier en silence sur le seed, ce qui produirait une
+fiche fausse sans le dire.
+
+**Vérifié.** 36 tests dont quatre nouveaux : l'état courant l'emporte sur le
+seed (`#123456`, révision 42), deux générations successives donnent le même
+fichier, l'absence d'état se replie sur le seed et l'écrit, un état corrompu
+rejette la génération sans laisser de fichier. Mesuré à la main : 537 lignes,
+39 tokens, 10 composants, 37 variantes ; `--only` du commit de tokens n'emporte
+pas la fiche.
+
+## Le générateur passe dans l'interface
+
+**Demandé.** Le bouton « Fiche .md » dans l'en-tête, à gauche de Commit, lance
+la génération sans terminal. Le message flottant annonce le fichier et son
+nombre de lignes ; le bouton affiche « Génération… » pendant le travail, le
+temps d'un démarrage de Node — sans cet état d'attente, il paraît mort et on
+le clique deux fois.
+
+**Pourquoi un processus enfant.** Le serveur tourne déjà : les crochets de
+module qui neutralisent les imports d'images s'enregistrent au démarrage d'un
+processus, trop tard pour lui. La route relance donc exactement la commande
+documentée, `execFile` avec un tableau d'arguments figé, sans shell et sans
+paramètre venu de la requête. La destination reste écrite dans le générateur.
+`tsx` est une dépendance de développement, mais le serveur lui-même tourne
+sous tsx : s'il répond, le binaire est là.
+
+**Diagnostic borné.** En cas d'échec, seule la première ligne utile de stderr
+remonte, tronquée à 200 caractères, avec un renvoi vers « npm run doc » pour
+l'erreur complète. Une trace de Node sur dix lignes n'apprend rien de plus
+dans un message flottant.
+
+**Vérifié.** 37 tests : la route refuse un paramètre (400, avant tout
+lancement) et une session absente (403). Dans le site, clic réel après
+rechargement : le fichier est réécrit — horodatage passé de 10:17:28 à
+10:22:32, empreinte identique puisque rien n'avait changé — et le message
+affiche « workspace/DESIGN_SYSTEM.md régénéré — 537 lignes. Rien n'est
+commité. »
+
+**Un piège rencontré.** Après redémarrage du serveur, un onglet resté ouvert
+garde un jeton de session périmé : les deux premiers clics sont partis en 403
+sans rien écrire. Le rechargement suffit. C'est le comportement existant de
+l'API, pas une régression du bouton.
+
+## La fiche .md devient une fiche, pas un déclencheur
+
+**Le changement.** Le bouton de l'en-tête n'écrit plus rien au clic : il ouvre
+une boîte centrée qui dit ce que le fichier contient, puis propose de
+l'écrire. Un fichier qu'on va joindre à une conversation mérite qu'on sache ce
+qu'il y a dedans avant de l'envoyer ; et un bouton qui écrit sur disque sans
+rien annoncer demande qu'on lui fasse confiance sans raison.
+
+**Centrée, pas accrochée.** L'historique est une liste à consulter : il
+s'ouvre à côté de son bouton, sans assombrir la page. Celle-ci demande une
+décision — écrire un fichier — donc elle est centrée, sur un fond assombri et
+légèrement flouté, avec les deux issues rangées dans un pied. Même boîte,
+mêmes animations, même fermeture par Échap, par le fond ou par la croix ; seul
+le placement change, par une classe.
+
+**Les nombres sont comptés, pas écrits.** « 39 tokens », « 10 composants, 37
+variantes » viennent de `tokenKeys` et de `useCatalogue`, le catalogue que la
+page affiche. Une phrase écrite en dur aurait vieilli au premier composant
+ajouté — c'est exactement le défaut que la fiche est censée corriger.
+
+**Le compte rendu reste dans la boîte.** L'erreur et le succès s'affichent
+dans la fiche, pas dans le message flottant de la page : la fiche est posée
+dans le calque supérieur, au-dessus de son propre fond, et un message resté
+derrière ne se verrait pas.
+
+**Vérifié dans le site.** Ouverture au clic, génération (fichier réécrit,
+horodatage 10:25:30 → 10:32:27, bandeau vert « 537 lignes »), bouton qui passe
+à « Régénérer la fiche », fermeture par la croix et par Échap. À 320 px, la
+boîte fait 288 px de large, centrée, avec 16 px de marge de chaque côté et son
+corps qui défile. 37 tests, `tsc` et `build` passent.
+
+**Un piège de mesure.** La première capture d'écran après le clic paraissait
+vide : elle tombait pendant les 340 ms d'ouverture, quand l'opacité part de
+zéro. Rien à corriger — mais une capture immédiate ne prouve rien sur une
+boîte animée.
+
+## Un panneau peint à gauche de la fiche
+
+**Le changement.** La fiche passe en deux colonnes : une bande dégradée à
+gauche, le contenu à droite. La bande porte l'icône de la marque telle quelle,
+une pastille « .md », et deux carrés arrondis concentriques qui semblent en
+émaner. Elle ne dit rien que le texte ne dise : elle est retirée de l'arbre
+d'accessibilité.
+
+**Sous 560 px, elle se couche.** En colonne, une illustration de cette taille
+prendrait la moitié de la hauteur utile ; elle devient un bandeau de 112 px et
+le contenu reprend la main. Mesuré à 380 px : boîte de 341 px, bandeau de
+110 px, corps qui défile.
+
+**Ce que je n'ai pas repris des références.** Les deux exemples posent leur
+illustration en haut ; la demande disait à gauche. Les deux sont tenus : à
+gauche en largeur normale, en haut quand la place manque.
+
+**Un clic que je n'ai pas pu qualifier.** Dans le navigateur piloté, le clic
+sur le bouton n'ouvre pas la fiche une fois sur deux. En traçant les
+événements : quand un `pointerdown` arrive sur le bouton, la fiche s'ouvre
+toujours — et quand elle ne s'ouvre pas, aucun événement de souris n'est
+arrivé. L'attribut `popovertarget` est bien résolu (`popoverTargetElement`
+non nul). C'est donc le clic synthétique qui se perd, pas la page ; à
+confirmer par un clic humain.
+
+## La vidéo de marque dans le panneau
+
+**Le fichier.** `Header - IZ.mp4` fait 18 Mo en 2176 × 4006 pour une colonne
+de 272 px : c'est un original de montage, pas un asset. Transcodé par
+`avconvert` en 696 × 1280, il tombe à **1,0 Mo** — soit dix-sept fois moins
+pour une définition encore deux fois supérieure à la taille d'affichage sur
+écran dense. C'est cette version qui est versionnée, sous
+`app/client/brand/header-motion.mp4`. L'original reste dans les
+téléchargements de l'étudiant ; il n'a pas sa place dans un dépôt public.
+
+**La largeur vient de la vidéo.** Le panneau fait 272 px, pas une valeur
+ronde : la vidéo est portrait (rapport 0,544) et `cover` rogne les côtés dès
+que la colonne est plus étroite que sa hauteur multipliée par ce rapport. À
+500 px de haut, il faut 271,3 px — d'où 272, et la vidéo se voit sur toute sa
+largeur. La modale passe de 640 à 720 px pour que la colonne de texte ne perde
+rien.
+
+**Couchée, la bande ne montre pas la vidéo.** Sous 560 px, le panneau devient
+un bandeau de 112 px : une vidéo portrait y est rognée si fort qu'on tombe au
+milieu d'une icône. Le décor dessiné — dégradé et carrés concentriques — tient
+la bande seul. Même chose si le mouvement est refusé : la vidéo est retirée,
+pas figée sur une image arbitraire.
+
+**Le crochet du générateur suit.** `scripts/asset-stub.mjs` neutralise
+désormais aussi `.mp4` et `.webm` : sans cela, `npm run doc` serait tombé sur
+l'import de la vidéo dès qu'il lit `App.tsx` par la chaîne des composants.
+Vérifié après coup : la fiche se régénère, 537 lignes.
+
+**La pastille « .md » est retirée.** Elle venait de moi, pas d'une demande, et
+la vidéo porte déjà la marque.
+
+## La vidéo d'origine, finalement
+
+**Décision de l'étudiant, après l'avoir vue transcodée.** Le fichier versionné
+est maintenant l'original : `Header - IZ.mp4`, 19 Mo, 2176 × 4006. La version
+à 1,0 Mo est abandonnée. Ce qui change, et qui est assumé :
+
+- **le dépôt grossit de 19 Mo**, définitivement : Git garde l'objet même après
+  un remplacement ultérieur, et le dépôt est public ;
+- **le décodage se fait en 2176 × 4006 pour un panneau de 272 px**, soit huit
+  fois la largeur affichée sur écran dense. C'est du travail continu pour la
+  machine tant que la fiche est ouverte ;
+- **le premier affichage dépend du cache**. Servi en local, le fichier arrive
+  vite ; vérifié après chargement complet, la lecture est fluide et la boucle
+  tourne.
+
+**Vérifié.** Panneau de 272 × 499, vidéo nette, lecture en boucle, pause
+automatique quand l'onglet passe en arrière-plan (comportement du navigateur,
+pas du code). 37 tests, `tsc`, `build` et `npm run doc` passent.
+
+**Reste vrai de l'entrée précédente** : la largeur du panneau est calée sur le
+rapport de la vidéo, la bande couchée et le mode « mouvement réduit » ne
+l'affichent pas, et `scripts/asset-stub.mjs` neutralise `.mp4` pour que le
+générateur de fiche continue de lire les composants.
+
+**Rectification, même jour.** Le fichier des téléchargements avait été
+réexporté entre-temps : même durée et mêmes dimensions, 19 086 796 octets au
+lieu de 19 751 751, empreinte différente. C'est ce second export qui est
+versionné. Comparer les empreintes plutôt que les noms évite de « remettre le
+même fichier » sans voir qu'il a changé.
+
+## Les marges sont passées dans la vidéo
+
+**Le symptôme.** Les icônes touchaient le bord droit du panneau, contre la
+colonne de texte. **La cause** n'était pas la mise en page : la vidéo était
+cadrée bord à bord. L'étudiant l'a réexportée avec ses propres marges —
+2176 × 3554 au lieu de 2176 × 4006, 16 Mo.
+
+**Deux réglages ont suivi.** La largeur du panneau est recalée sur le nouveau
+rapport (0,612) : 306 px pour 500 px de haut, soit la vidéo entière, marges
+comprises. Et surtout, la hauteur de la vidéo est maintenant déduite de sa
+largeur par `aspect-ratio`, au lieu de suivre la colonne. Sans cela, le compte
+rendu de génération allonge la fiche de 70 px, `cover` reprend la main et
+rogne les côtés — c'est-à-dire exactement les marges que la vidéo venait
+d'acquérir. Mesuré : panneau 306 × 569 après génération, vidéo toujours
+306 × 500, centrée.
+
+**Le dégradé comble le reste.** Ses trois teintes sont relevées au pixel sur
+les bords de la vidéo (#e1f0fe en haut, #a0cdfe au milieu, #69b2fe en bas) :
+la bande qui apparaît au-dessus et au-dessous ne se distingue pas d'elle.

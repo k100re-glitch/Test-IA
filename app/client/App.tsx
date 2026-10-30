@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Scenario } from './DesignSystem.js';
-import CanvasBoard from './CanvasBoard.js';
+import CanvasBoard, { useCatalogue } from './CanvasBoard.js';
 import glyph from './brand/glyph.png';
+import headerMotion from './brand/header-motion.mp4';
 import Banner from './Banner.js';
 import TokensTab from './TokensTab.js';
 import {
   bootstrap,
   commit,
+  generateDoc,
   getState,
   gitCommit,
   request,
@@ -80,6 +82,23 @@ export default function App() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [saving, setSaving] = useState(false);
+  // La génération relance un processus Node : elle prend une seconde ou deux.
+  // Sans état d'attente, le bouton paraît mort et on le clique deux fois.
+  const [writingDoc, setWritingDoc] = useState(false);
+  const [docOpen, setDocOpen] = useState(false);
+  // Le compte rendu de la dernière génération, gardé dans la fiche plutôt que
+  // dans le message flottant : on vient d'y lire ce qui allait être écrit,
+  // c'est là qu'on attend la réponse.
+  const [docDone, setDocDone] = useState('');
+  const [docError, setDocError] = useState('');
+  // Les nombres annoncés par la fiche sont comptés sur le catalogue réel,
+  // celui que l'atelier affiche. Une phrase écrite en dur vieillirait au
+  // premier composant ajouté.
+  const catalogue = useCatalogue();
+  const catalogueVariants = catalogue.reduce(
+    (n, entry) => n + entry.variants.length,
+    0,
+  );
   const [historyOpen, setHistoryOpen] = useState(false);
   // La bannière est un décor d'accueil. Sur la fiche d'un composant elle
   // n'apporte rien et repousse le contenu sous la ligne de flottaison.
@@ -122,7 +141,10 @@ export default function App() {
       // feuille de style redeviendrait fausse à la prochaine.
       const anchor = historyButton.current?.getBoundingClientRect();
       if (anchor) {
-        node.style.setProperty('--sheet-top', `${Math.round(anchor.bottom + 8)}px`);
+        node.style.setProperty(
+          '--sheet-top',
+          `${Math.round(anchor.bottom + 8)}px`,
+        );
         node.style.setProperty(
           '--sheet-right',
           `${Math.round(innerWidth - anchor.right)}px`,
@@ -184,13 +206,42 @@ export default function App() {
       </a>
       <header className="studio-header">
         <div className="wordmark">
-          <img className="brand-logo" src={glyph} alt="" width={30} height={30} />
+          <img
+            className="brand-logo"
+            src={glyph}
+            alt=""
+            width={30}
+            height={30}
+          />
           <div>
             <strong>Inbox Zapper</strong>
             <span>Design System</span>
           </div>
         </div>
         <div className="header-status">
+          {/* Le bouton n'écrit rien : il ouvre la fiche, qui dit ce que le
+              fichier contient avant de proposer de l'écrire. Un fichier qu'on
+              va joindre à une conversation mérite qu'on sache ce qu'il y a
+              dedans. */}
+          <button
+            type="button"
+            className="is-doc"
+            // L'ouverture est confiée au navigateur par `popovertarget`.
+            // Appelée depuis React, `showPopover()` tombait dans le même
+            // événement que le clic : la fiche s'ouvrait, puis le clic
+            // lui-même comptait comme un clic au dehors et la refermait
+            // aussitôt — pas à tous les coups, ce qui est pire. L'attribut
+            // n'a pas cette course.
+            popoverTarget="doc-sheet"
+            aria-expanded={docOpen}
+          >
+            {/* Une feuille et ses lignes de texte. */}
+            <svg width="15" height="15" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M11.4 2.4H6a2 2 0 0 0-2 2v11.2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7z" />
+              <path d="M11.2 2.6V7h4.6M7.4 11h5.2M7.4 14h3.4" />
+            </svg>
+            Fiche .md
+          </button>
           {/* Commiter écrit les tokens courants dans le fichier versionnable du
               workspace et les valide. Rien n'est poussé : publier est une autre
               décision, qui se prend ailleurs. */}
@@ -313,6 +364,147 @@ export default function App() {
               </li>
             ))}
           </ol>
+        </div>
+      </div>
+      {/* La fiche .md : ce que le fichier contient, puis le bouton qui l'écrit.
+          Les trois nombres sont comptés sur place — ils doivent suivre le
+          design system, pas une phrase écrite une fois. */}
+      <div
+        className="sheet is-doc-sheet"
+        id="doc-sheet"
+        popover="auto"
+        onToggle={(e) => setDocOpen(e.newState === 'open')}
+        aria-labelledby="doc-title"
+      >
+        {/* Le panneau d'illustration. Décoratif au sens strict : il ne porte
+            aucune information que le texte ne donne pas, donc il est retiré de
+            l'arbre d'accessibilité et disparaît en colonne étroite plutôt que
+            de voler la moitié de la hauteur au contenu. */}
+        <div className="doc-art" aria-hidden="true">
+          {/* Le décor dessiné reste sous la vidéo : il habille la colonne si
+              le mouvement est refusé, et pendant que la vidéo charge. */}
+          <span className="doc-art-grid" />
+          {/* Muette, en boucle, sans commande : c'est un décor, pas un média à
+              lire. `playsInline` évite le passage en plein écran sur iOS. Le
+              dégradé reste dessous : il tient la place pendant le chargement,
+              et il est seul si le mouvement est refusé. */}
+          <video src={headerMotion} autoPlay loop muted playsInline />
+        </div>
+        <div className="doc-main">
+          <header className="sheet-head">
+            <span className="sheet-crumb">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path d="M11.4 2.4H6a2 2 0 0 0-2 2v11.2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7z" />
+                <path d="M11.2 2.6V7h4.6M7.4 11h5.2M7.4 14h3.4" />
+              </svg>
+              Design System
+              <i aria-hidden="true">/</i>
+              <strong id="doc-title">Fiche .md</strong>
+            </span>
+            <button
+              type="button"
+              className="sheet-close"
+              popoverTarget="doc-sheet"
+              popoverTargetAction="hide"
+              aria-label="Fermer la fiche"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path d="m5.4 5.4 9.2 9.2M14.6 5.4l-9.2 9.2" />
+              </svg>
+            </button>
+          </header>
+          <div className="sheet-body">
+            <p className="sheet-lead">
+              Un seul fichier Markdown qui décrit votre design system tel qu’il
+              est maintenant. À joindre à une conversation avec un assistant
+              pour qu’il travaille sur les bonnes valeurs plutôt que sur celles
+              qu’il a vues la dernière fois.
+            </p>
+            <ul className="doc-points">
+              <li>
+                <strong>{tokenKeys.length} tokens</strong>
+                <span>leur valeur en vigueur et leur variable CSS</span>
+              </li>
+              <li>
+                <strong>
+                  {catalogue.length} composants, {catalogueVariants} variantes
+                </strong>
+                <span>
+                  avec le JSX à coller, lu dans les composants eux-mêmes
+                </span>
+              </li>
+              <li>
+                <strong>La palette Figma et les règles</strong>
+                <span>162 couleurs sources et les règles de conception</span>
+              </li>
+            </ul>
+            <p className="doc-path">
+              Écrit dans <code>workspace/DESIGN_SYSTEM.md</code>. Le fichier est
+              remplacé à chaque fois, et rien n’est commité.
+            </p>
+            {docError && (
+              <p className="doc-bad" role="alert">
+                {docError}
+              </p>
+            )}
+            {docDone && (
+              <p className="doc-ok" role="status">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path d="m5.6 10.4 3 3 5.8-6.8" />
+                </svg>
+                {docDone}
+              </p>
+            )}
+          </div>
+          <footer className="sheet-foot">
+            <button
+              type="button"
+              className="is-ghost"
+              popoverTarget="doc-sheet"
+              popoverTargetAction="hide"
+            >
+              Fermer
+            </button>
+            <button
+              type="button"
+              className="is-cta"
+              disabled={writingDoc}
+              // L'erreur est rendue dans la fiche et non dans le bandeau de la
+              // page : la fiche est posée dans le calque supérieur, au-dessus de
+              // son propre fond, donc un message resté derrière ne se verrait
+              // pas.
+              onClick={() => {
+                setWritingDoc(true);
+                setDocDone('');
+                setDocError('');
+                void generateDoc()
+                  .then((result) => setDocDone(result.message))
+                  .catch((e: Error) => setDocError(e.message))
+                  .finally(() => setWritingDoc(false));
+              }}
+            >
+              {writingDoc
+                ? 'Génération…'
+                : docDone
+                  ? 'Régénérer la fiche'
+                  : 'Générer la fiche'}
+            </button>
+          </footer>
         </div>
       </div>
       {!componentOpen && <Banner />}

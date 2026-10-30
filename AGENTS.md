@@ -24,6 +24,15 @@ Codex peut découvrir `.agents/skills/`. Utilisez `$token-change` pour une évol
 de token et `$component-audit` pour vérifier sa propagation. Les autres agents
 peuvent lire ces fichiers explicitement ; leur découverte native n’est pas affirmée.
 
+## Fiche du design system
+
+`npm run doc`, ou le bouton « Fiche .md » de l’en-tête, régénère
+`workspace/DESIGN_SYSTEM.md` depuis l’état courant et le catalogue de
+composants. La route `/api/generate-doc` ne prend aucun paramètre et relance la
+commande dans un processus enfant, sans shell. Ce fichier est une sortie : ne pas l’éditer à la main,
+ne pas s’y fier pour une valeur qu’un changement récent aurait pu déplacer sans
+régénération. Le générateur lit `.ds-studio/state.json` sans l’écrire.
+
 ## Vérifications
 
 `npm run check`, `npm test`, `npm run build`, puis `npm run test:e2e` pour un

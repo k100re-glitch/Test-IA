@@ -57,6 +57,10 @@ export const gitCommit = () =>
     'git-commit',
     {},
   );
+// Régénère workspace/DESIGN_SYSTEM.md depuis l'état courant et le catalogue.
+// Comme le commit, le serveur ne prend aucun paramètre.
+export const generateDoc = () =>
+  request<{ file: string; lines: number; message: string }>('generate-doc', {});
 export async function exportTokens() {
   const tokens = await request<Tokens>('export');
   downloadText(

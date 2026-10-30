@@ -182,6 +182,28 @@ pas une copie de votre fichier. Aucun fichier personnel autorisé n’a été fo
 aucun accès Figma n’a été tenté. Les clients tiers MCP doivent être autorisés par Figma.
 Pas de contournement ni réutilisation de session : [contrat d’intégration](docs/FIGMA.md).
 
+## Fiche du design system pour un assistant
+
+```sh
+npm run doc
+```
+
+Le bouton **Fiche .md**, dans l’en-tête de l’atelier, ouvre une fiche qui
+résume ce que le fichier contient et le génère sans passer par un terminal.
+
+Écrit `workspace/DESIGN_SYSTEM.md` : les tokens en vigueur avec leur variable
+CSS, la palette source du fichier Figma, les composants avec leurs variantes et
+le JSX à coller, et une copie des règles de conception. C’est le fichier à
+donner à un assistant pour qu’il travaille sur le DS à jour plutôt que sur ce
+qu’il a vu la dernière fois. À relancer après un changement de token ou de
+composant ; la fiche est entièrement régénérée, donc toute retouche faite
+dedans est perdue — corriger la source.
+
+Les tokens sont lus dans l’état courant de l’atelier (`.ds-studio/state.json`)
+et, à défaut, dans le seed versionné. Le catalogue est lu dans les composants
+eux-mêmes : aucune liste parallèle à tenir à jour. La commande ne modifie ni
+l’état, ni Git.
+
 ## Vérifier et développer
 
 ```sh

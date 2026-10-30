@@ -278,3 +278,16 @@ test('catalogue de DS : liste fermée, identifiants hors périmètre refusés', 
   assert.equal(proposal.source, 'import');
   assert.equal(store.snapshot().revision, before);
 });
+test('génération de la fiche : aucun paramètre accepté, session exigée', async (t) => {
+  const { post } = await fixture(t);
+  // La route ne prend rien : un paramètre est refusé par le schéma, donc avant
+  // qu'aucun processus ne soit lancé. Rien n'est écrit sur disque ici.
+  assert.equal(
+    (await post('generate-doc', { file: '../ailleurs.md' })).status,
+    400,
+  );
+  assert.equal(
+    (await post('generate-doc', {}, { 'X-DS-Studio': 'faux' })).status,
+    403,
+  );
+});

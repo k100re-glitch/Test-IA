@@ -8,6 +8,7 @@ import { Store, StudioError } from './store.js';
 import { ProjectStore } from './project.js';
 import { Catalogue } from './catalogue.js';
 import { commitTokens } from './git.js';
+import { generateDoc } from './doc.js';
 import { projectSchema } from '../shared/project.js';
 import { CodexAdapter } from '../../connectors/agents/codex.js';
 import { unvalidatedAdapter } from '../../connectors/agents/unvalidated.js';
@@ -159,7 +160,10 @@ export async function createStudioServer(options: {
         // de fichier : un diff que l'étudiant valide. Rien n'est écrit ici.
         if (url.pathname === '/api/design-systems') {
           const b = z
-            .object({ revision: z.number().int().nonnegative(), id: z.string() })
+            .object({
+              revision: z.number().int().nonnegative(),
+              id: z.string(),
+            })
             .strict()
             .parse(body);
           const chosen = await catalogue.find(b.id);
@@ -196,6 +200,12 @@ export async function createStudioServer(options: {
             200,
             await commitTokens(root, snapshot.revision, snapshot.tokens),
           );
+        }
+        // Régénère la fiche Markdown du design system. Aucun paramètre : la
+        // destination est écrite dans le générateur, pas reçue d'ici.
+        if (url.pathname === '/api/generate-doc') {
+          z.object({}).strict().parse(body);
+          return send(200, await generateDoc(root));
         }
         if (url.pathname === '/api/commit') {
           const b = z.object({ id: z.string().uuid() }).strict().parse(body);

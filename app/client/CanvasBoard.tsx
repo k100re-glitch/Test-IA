@@ -21,7 +21,7 @@ import {
 // variantes. La structure reprend celle d'une page d'index d'outils :
 // fil d'Ariane, titre, grille de cartes, chaque carte menant à sa page.
 
-interface Variant {
+export interface Variant {
   label: string;
   node: ReactNode;
   wide?: boolean;
@@ -31,7 +31,7 @@ interface Variant {
 // Écrans où le composant apparaît réellement. L'aperçu les charge dans
 // l'iframe du scénario, à largeur de téléphone : on voit la pièce en service,
 // pas isolée sur sa scène.
-interface Situation {
+export interface Situation {
   scenario: string;
   label: string;
 }
@@ -76,7 +76,7 @@ function FamilyIcon({ family }: { family: (typeof families)[number] }) {
 }
 type Family = (typeof families)[number];
 
-interface Entry {
+export interface Entry {
   id: string;
   family: Family;
   name: string;
@@ -626,22 +626,28 @@ export default function CanvasBoard({
 }) {
   const [open, setOpen] = useState<string>();
   const [tab, setTab] = useState<'components' | 'tokens'>('components');
-  // Ouvrir ou fermer une fiche remonte en haut : sans cela on arrive au milieu
-  // d'une page qui vient de changer entièrement de contenu. La remontée est
-  // animée — un saut instantané double le changement de contenu d'un
-  // changement de position, et on ne sait plus où l'on a atterri.
+  // Remonter en haut AVANT d'échanger le contenu, et d'un seul coup.
+  //
+  // Une remontée animée se faisait prendre de vitesse : le contenu était
+  // remplacé pendant le trajet, le document rétrécissait, et le navigateur
+  // rabattait la position au nouveau bas de page — on atterrissait donc en
+  // bas, puis on remontait lentement. En remontant d'abord, dans le même
+  // gestionnaire d'événement, le navigateur ne peint qu'une fois : en haut,
+  // avec le nouveau contenu. La douceur est portée par l'animation d'arrivée
+  // du bloc, qui elle ne dépend pas de la hauteur du document.
+  const toTop = () => scrollTo({ top: 0, behavior: 'auto' });
   const show = (id?: string) => {
+    toTop();
     setOpen(id);
     onOpenChange?.(id);
-    scrollTo({
-      top: 0,
-      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
-        ? 'auto'
-        : 'smooth',
-    });
+  };
+  const goToTab = (next: 'components' | 'tokens') => {
+    toTop();
+    setTab(next);
   };
   const entries = useCatalogue();
   const current = entries.find((e) => e.id === open);
+  const view = tab === 'tokens' ? 'tokens' : (current?.id ?? 'index');
   const style = tokenCss(tokens) as CSSProperties;
   const total = entries.reduce((n, e) => n + e.variants.length, 0);
   return (
@@ -695,7 +701,7 @@ export default function CanvasBoard({
               role="tab"
               aria-selected={tab === 'components'}
               className={tab === 'components' ? 'is-on' : undefined}
-              onClick={() => setTab('components')}
+              onClick={() => goToTab('components')}
             >
               Composants
             </button>
@@ -704,7 +710,7 @@ export default function CanvasBoard({
               role="tab"
               aria-selected={tab === 'tokens'}
               className={tab === 'tokens' ? 'is-on' : undefined}
-              onClick={() => setTab('tokens')}
+              onClick={() => goToTab('tokens')}
             >
               Tokens
             </button>
@@ -801,7 +807,11 @@ export default function CanvasBoard({
             ))}
         </aside>
         )}
-        <div className="cat-main">
+        {/* La clé change à chaque vue : React remonte le bloc, ce qui rejoue
+            son animation d'arrivée. Sans cela le contenu se substituait d'un
+            coup, pendant que la page remontait en douceur — deux rythmes pour
+            un seul geste. */}
+        <div className="cat-main" key={view}>
       {tokensView && tab === 'tokens' ? (
         <>
           <header className="cat-head">

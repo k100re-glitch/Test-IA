@@ -19,6 +19,7 @@
     "test:e2e": "playwright test",
     "test:live": "tsx scripts/check-codex.ts",
     "scan": "node scripts/scan-public.mjs",
+    "doc": "node --import tsx --import ./scripts/asset-stub.mjs scripts/generate-doc.ts",
     "doctor": "node scripts/doctor.mjs",
     "qualify": "node scripts/qualify-local.mjs",
     "qualify:live": "node scripts/qualify-local.mjs --with-codex",

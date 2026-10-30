@@ -239,7 +239,6 @@ small,
   background: #1f396b;
 }
 
-
 .swatches {
   display: flex;
   gap: 8px;
@@ -267,7 +266,6 @@ small,
   font-size: 12px;
   min-height: 39px;
 }
-
 
 .studio-footer {
   display: flex;
@@ -695,7 +693,6 @@ del {
   margin-bottom: 10px;
 }
 
-
 h2[id] {
   scroll-margin-top: 16px;
 }
@@ -704,8 +701,6 @@ h2[id] {
     margin: 0 14px 18px;
   }
 }
-
-
 
 /* ---------------------------------------------------------------------------
    Atomes Inbox Zapper — valeurs reprises de la page components_list.
@@ -1449,7 +1444,11 @@ h2[id] {
   margin-top: 28px;
   background: #f5f5f5;
   border-top: 1px solid var(--cat-line);
-  font-family: Inter, -apple-system, system-ui, sans-serif;
+  font-family:
+    Inter,
+    -apple-system,
+    system-ui,
+    sans-serif;
   font-size: 15px;
   color: var(--cat-ink);
 }
@@ -2287,7 +2286,6 @@ h2[id] {
   border-radius: 10px;
 }
 
-
 /* ---------------------------------------------------------------------------
    Bannière. Elle reste ancrée au viewport pendant que la page défile : le
    catalogue, opaque, vient la recouvrir. L'image est décorative.
@@ -2313,7 +2311,6 @@ h2[id] {
   z-index: 1;
   background: #fff;
 }
-
 
 /* ---------------------------------------------------------------------------
    Tableaux de couleurs, repris des planches Figma « Primitive Colors » et
@@ -2468,7 +2465,6 @@ h2[id] {
     transition: none;
   }
 }
-
 
 /* scan_free_limit — node Figma 8047:17777. Largeur 353, rayon 12.
    Les deux dispositions du composant : une ligne centrée pour les états
@@ -3470,9 +3466,11 @@ dialog h2 {
 .banner-lockup strong {
   margin-left: -6px;
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  /* Le resserrement s'allège avec la graisse : un interlettrage taillé pour
+     du gras referme trop un tracé plus fin. */
+  letter-spacing: -0.022em;
 }
 .banner-lockup i {
   width: 1px;
@@ -4161,5 +4159,342 @@ dialog h2 {
 @media (max-width: 740px) {
   :root {
     --shell-gutter: 16px;
+  }
+}
+
+/* Arrivée d'une vue : fondu et montée de 8 px. L'animation est portée par le
+   bloc remonté, donc elle se rejoue à chaque changement de vue sans qu'on ait
+   à piloter d'état. Elle dure moins que la remontée de la page, qu'elle
+   accompagne au lieu de la suivre. */
+/* Pas de `fill-mode` : sans lui, le bloc rend son état naturel tant que
+   l'animation n'a pas démarré. Avec `both`, il resterait figé sur l'image de
+   départ — donc invisible — partout où les animations sont suspendues, par
+   exemple dans un onglet d'arrière-plan. Un contenu qui ne s'affiche pas est
+   pire qu'un contenu qui n'est pas animé. */
+.cat-main {
+  animation: view-in 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* La montée passe de 8 à 12 px avec la durée : un trajet inchangé étalé sur
+   plus longtemps se traîne au lieu de glisser. */
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cat-main {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Bouton « Fiche .md »
+   Il régénère workspace/DESIGN_SYSTEM.md. Son pictogramme est au trait, comme
+   l'horloge de l'historique : les deux ouvrent sur un document, l'aplat reste
+   réservé au seul bouton sombre de l'écran.
+   --------------------------------------------------------------------------- */
+.header-status > button.is-doc svg,
+.cat-actions > button.is-doc svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
+}
+/* Pendant la génération, le bouton reste lisible mais n'invite plus au clic. */
+.header-status > button.is-doc:disabled,
+.cat-actions > button.is-doc:disabled {
+  cursor: default;
+  opacity: 0.6;
+  background: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   La fiche .md
+   Même boîte que l'historique, mais centrée : celle-ci demande une décision —
+   écrire un fichier — alors que l'historique n'est qu'une liste à consulter.
+   D'où un fond assombri, qui met la page en retrait le temps de choisir, et un
+   pied qui range les deux issues du même côté.
+   --------------------------------------------------------------------------- */
+.sheet.is-doc-sheet {
+  /* `inset: 0` plus des marges automatiques centrent la boîte sur les deux
+     axes. La hauteur doit être celle du contenu : sans cela, l'étirement entre
+     haut et bas l'emporte et il n'y a plus rien à centrer. */
+  inset: 0;
+  margin: auto;
+  width: min(460px, calc(100vw - 32px));
+  height: fit-content;
+  max-height: min(620px, calc(100vh - 64px));
+  transform-origin: center;
+}
+.sheet.is-doc-sheet::backdrop {
+  background: rgb(16 18 27 / 32%);
+  backdrop-filter: blur(2px);
+  transition:
+    opacity 340ms cubic-bezier(0.16, 1, 0.3, 1),
+    display 340ms allow-discrete,
+    overlay 340ms allow-discrete;
+}
+.sheet.is-doc-sheet:not(:popover-open)::backdrop {
+  opacity: 0;
+}
+@starting-style {
+  .sheet.is-doc-sheet:popover-open::backdrop {
+    opacity: 0;
+  }
+}
+/* Centrée, elle ne tombe de nulle part : elle monte légèrement et s'installe,
+   au lieu de glisser depuis le coin de son bouton. */
+.sheet.is-doc-sheet:not(:popover-open) {
+  transform: translateY(8px) scale(0.98);
+}
+@starting-style {
+  .sheet.is-doc-sheet:popover-open {
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet.is-doc-sheet,
+  .sheet.is-doc-sheet:not(:popover-open) {
+    transform: none;
+  }
+}
+
+/* Ce que contient le fichier : trois lignes, un nombre et ce qu'il recouvre.
+   Encadrées ensemble, elles se lisent comme un sommaire et non comme trois
+   arguments de vente. */
+.doc-points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ui-line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.doc-points li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 11px 14px;
+}
+.doc-points li + li {
+  border-top: 1px solid var(--ui-line);
+}
+.doc-points strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ui-ink);
+}
+.doc-points span {
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--ui-muted);
+}
+.doc-path {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--ui-muted);
+}
+.doc-path code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--ui-field);
+  font-size: 12px;
+  color: var(--ui-ink);
+}
+/* Le compte rendu reste dans la fiche : c'est là qu'on vient de lire ce qui
+   allait être écrit, c'est là qu'on attend la réponse. */
+.doc-ok,
+.doc-bad {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 18px;
+}
+.doc-ok {
+  background: #eef9e9;
+  color: #2d6718;
+}
+.doc-bad {
+  background: #fdecec;
+  color: #9d2b2b;
+}
+.doc-ok svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sheet-foot {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 14px 18px;
+  border-top: 1px solid var(--ui-line);
+  background: #fbfbfc;
+}
+.sheet-foot button {
+  height: var(--ui-control);
+  padding: 0 14px;
+  border-radius: var(--ui-radius);
+  border: 1px solid var(--ui-line);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ui-ink);
+  cursor: pointer;
+}
+.sheet-foot .is-ghost:hover {
+  background: var(--ui-field);
+}
+/* Le bouton sombre de l'écran est ici tant que la fiche est ouverte : la page
+   derrière est assombrie, un seul reste lisible à la fois. */
+.sheet-foot .is-cta {
+  background: var(--ui-ink);
+  border-color: var(--ui-ink);
+  color: #fff;
+}
+.sheet-foot .is-cta:hover {
+  background: #000;
+  border-color: #000;
+}
+.sheet-foot .is-cta:disabled {
+  cursor: default;
+  opacity: 0.55;
+  background: var(--ui-ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Le panneau d'illustration de la fiche
+   La boîte passe en deux colonnes : une bande peinte à gauche, le contenu à
+   droite. La bande ne dit rien — elle donne à la fiche un visage, et la marque
+   y est posée telle quelle plutôt que redessinée. Sous 560 px elle se couche
+   en bandeau : à la verticale, elle mangerait la moitié de la hauteur utile.
+   --------------------------------------------------------------------------- */
+.sheet.is-doc-sheet {
+  flex-direction: row;
+  width: min(740px, calc(100vw - 32px));
+}
+.doc-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  /* Sans ces deux-là, la colonne prend la largeur de son plus long mot et la
+     hauteur de son contenu : le corps ne défile plus. */
+  min-width: 0;
+  min-height: 0;
+}
+.doc-art {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Largeur réglée sur la vidéo, pas sur une valeur ronde : elle est portrait
+     (2176 × 3554, soit 0,612), et `cover` rogne les côtés dès que la colonne
+     est plus étroite que sa hauteur × ce rapport. À 306 px pour 500 px de
+     haut, on la voit sur toute sa largeur — marges comprises, puisqu'elles
+     sont désormais dans la vidéo elle-même. */
+  width: 306px;
+  overflow: hidden;
+  /* Les trois teintes sont relevées sur les bords de la vidéo (haut, milieu,
+     bas) : si une bande de fond apparaît, elle ne se distingue pas d'elle. */
+  background: linear-gradient(180deg, #e1f0fe 0%, #a0cdfe 50%, #69b2fe 100%);
+}
+/* Deux carrés arrondis concentriques, centrés sur la marque, plus un halo :
+   l'icône paraît émettre la trame au lieu d'être posée dessus. Le trait est
+   blanc translucide, il s'éteint de lui-même aux angles du dégradé. */
+.doc-art-grid {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 44%,
+    rgb(255 255 255 / 72%) 0%,
+    rgb(255 255 255 / 0%) 58%
+  );
+}
+.doc-art-grid::before,
+.doc-art-grid::after {
+  content: '';
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  translate: -50% -50%;
+  border: 1px solid rgb(255 255 255 / 75%);
+  border-radius: 28px;
+}
+.doc-art-grid::before {
+  width: 132px;
+  height: 132px;
+}
+.doc-art-grid::after {
+  width: 212px;
+  height: 212px;
+  border-radius: 44px;
+  border-color: rgb(255 255 255 / 45%);
+}
+.doc-art img {
+  position: relative;
+  border-radius: 14px;
+  box-shadow:
+    0 1px 2px rgb(16 18 27 / 6%),
+    0 8px 18px rgb(16 18 27 / 10%),
+    0 20px 40px rgb(16 18 27 / 10%);
+}
+@media (max-width: 560px) {
+  .sheet.is-doc-sheet {
+    flex-direction: column;
+    width: min(460px, calc(100vw - 32px));
+  }
+  .doc-art {
+    flex-direction: row;
+    width: auto;
+    height: 112px;
+  }
+  /* Couchée, la bande ne peut plus montrer la vidéo : elle est portrait, et
+     `cover` la rogne alors si fort qu'on tombe au milieu d'une icône. Le
+     décor dessiné tient la bande tout seul. */
+  .doc-art video {
+    display: none;
+  }
+}
+
+/* La vidéo du panneau : un décor, posé sous la pastille. `cover` la recadre
+   sur la colonne quelles que soient ses proportions ; le dégradé reste en
+   fond, visible le temps du chargement. */
+.doc-art video {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  translate: 0 -50%;
+  width: 100%;
+  /* Hauteur déduite de la largeur, et non de la colonne : sinon, quand le
+     compte rendu allonge la fiche, `cover` reprend en rognant les côtés —
+     c'est-à-dire exactement les marges que la vidéo porte désormais. Si la
+     colonne devient plus haute que la vidéo, c'est le dégradé qui comble en
+     haut et en bas, et il est relevé sur ses bords. */
+  height: auto;
+  aspect-ratio: 2176 / 3554;
+  object-fit: cover;
+  border: 0;
+}
+/* Mouvement refusé : on retire la vidéo plutôt que de la figer sur une image
+   arbitraire. Le dégradé et ses carrés suffisent à habiller la colonne. */
+@media (prefers-reduced-motion: reduce) {
+  .doc-art video {
+    display: none;
   }
 }

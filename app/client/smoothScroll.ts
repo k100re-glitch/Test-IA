@@ -9,6 +9,8 @@
 //
 // - Pas sur les zones qui défilent elles-mêmes (le corps de la popup, le
 //   sommaire, les tableaux). Y détourner la molette les rendrait inertes.
+// - Pas dans une popup ouverte, même une fois sa liste arrivée en bout : la
+//   page ne doit pas se mettre à glisser sous elle.
 // - Pas sur un écran tactile : le système y fournit déjà sa propre inertie,
 //   et la doubler donne un rendu flottant.
 // - Pas sous `prefers-reduced-motion`.
@@ -49,6 +51,9 @@ export function installSmoothScroll() {
 
   let target = scrollY;
   let frame = 0;
+  // Dernière position que nous avons posée nous-mêmes. Elle sert à distinguer
+  // nos propres déplacements de ceux des autres.
+  let applied = scrollY;
 
   const limit = () =>
     Math.max(0, document.documentElement.scrollHeight - innerHeight);
@@ -57,15 +62,27 @@ export function installSmoothScroll() {
     const gap = target - scrollY;
     if (Math.abs(gap) < SETTLE) {
       frame = 0;
+      applied = target;
       scrollTo(0, target);
       return;
     }
-    scrollTo(0, scrollY + gap * EASE);
+    applied = scrollY + gap * EASE;
+    scrollTo(0, applied);
     frame = requestAnimationFrame(step);
   };
 
   const onWheel = (event: WheelEvent) => {
     if (event.ctrlKey || event.defaultPrevented) return;
+    // Dans une popup ouverte, la page ne défile pas. Sans ce refus, une liste
+    // arrivée en bout de course rendait la main au défilement inertiel, qui
+    // faisait glisser la page — et la popup, qui se ferme au défilement de la
+    // page, disparaissait sous les doigts. Le confinement natif
+    // (`overscroll-behavior: contain`) suffit à arrêter là le mouvement.
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[popover]:popover-open')
+    )
+      return;
     if (scrollableAncestor(event.target, event.deltaY)) return;
     // Les navigateurs expriment la molette en lignes ou en pages selon le
     // matériel ; tout est ramené en pixels avant d'être cumulé.
@@ -82,8 +99,23 @@ export function installSmoothScroll() {
 
   // Clavier, ancres, barre de défilement : la page a bougé sans nous, la cible
   // doit suivre, sinon la molette suivante la ramènerait en arrière.
+  //
+  // Y compris en plein vol : si l'écart avec notre dernière position posée
+  // dépasse le pixel, le déplacement vient d'ailleurs et il fait autorité.
+  // Sans cela, une remontée programmée pendant une inertie se faisait ramener
+  // à l'ancienne cible — et la page glissait toute seule.
   const onScroll = () => {
-    if (!frame) target = scrollY;
+    if (!frame) {
+      target = scrollY;
+      applied = scrollY;
+      return;
+    }
+    if (Math.abs(scrollY - applied) > 2) {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      target = scrollY;
+      applied = scrollY;
+    }
   };
 
   addEventListener('wheel', onWheel, { passive: false });
