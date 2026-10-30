@@ -219,6 +219,21 @@ export default function App() {
           </div>
         </div>
         <div className="header-status">
+          <button
+            type="button"
+            className="is-history"
+            ref={historyButton}
+            onClick={() => setHistoryOpen(!historyOpen)}
+            aria-expanded={historyOpen}
+          >
+            {/* La même horloge que dans l'en-tête de la popup : le bouton et ce
+                qu'il ouvre portent le même signe. */}
+            <svg width="15" height="15" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M10 5.4V10l3 1.8" />
+              <circle cx="10" cy="10" r="7.2" />
+            </svg>
+            Historique · {state.revision}
+          </button>
           {/* Le bouton n'écrit rien : il ouvre la fiche, qui dit ce que le
               fichier contient avant de proposer de l'écrire. Un fichier qu'on
               va joindre à une conversation mérite qu'on sache ce qu'il y a
@@ -240,7 +255,7 @@ export default function App() {
               <path d="M11.4 2.4H6a2 2 0 0 0-2 2v11.2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7z" />
               <path d="M11.2 2.6V7h4.6M7.4 11h5.2M7.4 14h3.4" />
             </svg>
-            Fiche .md
+            Export .md
           </button>
           {/* Commiter écrit les tokens courants dans le fichier versionnable du
               workspace et les valide. Rien n'est poussé : publier est une autre
@@ -258,21 +273,6 @@ export default function App() {
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8" />
             </svg>
             Commit
-          </button>
-          <button
-            type="button"
-            className="is-history"
-            ref={historyButton}
-            onClick={() => setHistoryOpen(!historyOpen)}
-            aria-expanded={historyOpen}
-          >
-            {/* La même horloge que dans l'en-tête de la popup : le bouton et ce
-                qu'il ouvre portent le même signe. */}
-            <svg width="15" height="15" viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M10 5.4V10l3 1.8" />
-              <circle cx="10" cy="10" r="7.2" />
-            </svg>
-            Historique · {state.revision}
           </button>
         </div>
       </header>
@@ -404,14 +404,14 @@ export default function App() {
               </svg>
               Design System
               <i aria-hidden="true">/</i>
-              <strong id="doc-title">Fiche .md</strong>
+              <strong id="doc-title">Export .md</strong>
             </span>
             <button
               type="button"
               className="sheet-close"
               popoverTarget="doc-sheet"
               popoverTargetAction="hide"
-              aria-label="Fermer la fiche"
+              aria-label="Fermer l’export"
             >
               <svg
                 width="16"
